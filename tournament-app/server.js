@@ -2,16 +2,20 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import passport from 'passport';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import nodemailer from 'nodemailer';
+import passportLocal from 'passport-local';
+import bcrypt from 'bcryptjs';
+import session from 'express-session';
+import cors from 'cors'; // Import CORS
 
-// Initialize dotenv for environment variables
+// Initialize dotenv
 dotenv.config();
 
-// Initialize Express app
 const app = express();
 
-// Use JSON middleware to handle JSON request bodies
+// Enable CORS for all routes
+app.use(cors());
+
+// Middleware to parse JSON
 app.use(express.json());
 
 // MongoDB connection
@@ -19,156 +23,120 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.log('MongoDB connection error:', err));
 
-// Define tournament and player schemas
-const tournamentSchema = new mongoose.Schema({
-    name: String,
-    date: Date,
-    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
-    format: String,  // e.g., 'single elimination', 'round robin'
-    status: String,  // 'open', 'in progress', 'completed'
-});
-
-const matchSchema = new mongoose.Schema({
-    tournament: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
-    player1: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
-    player2: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
-    score1: Number,
-    score2: Number,
-    winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
-    date: Date,
-});
-
-const playerSchema = new mongoose.Schema({
-    name: String,
-    email: String,
+// User Schema
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    password: { type: String, required: true },
     role: { type: String, enum: ['player', 'tournament_official'], default: 'player' },
-    tournaments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' }],
-    matchHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Match' }],
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Tournament Schema
+const tournamentSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    date: { type: Date, required: true },
+    format: { type: String, required: true },
+    status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 });
 
 const Tournament = mongoose.model('Tournament', tournamentSchema);
-const Match = mongoose.model('Match', matchSchema);
-const Player = mongoose.model('Player', playerSchema);
 
-// Auth0 Passport JWT Strategy for user authentication
-passport.use(new JwtStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.AUTH0_CLIENT_SECRET,
-}, (jwtPayload, done) => {
-    return done(null, jwtPayload);
+// Match Schema
+const matchSchema = new mongoose.Schema({
+    tournament: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
+    player1: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    player2: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    score1: Number,
+    score2: Number,
+    winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    date: Date,
+});
+
+const Match = mongoose.model('Match', matchSchema);
+
+// Passport Local Strategy
+passport.use(new passportLocal.Strategy(
+    async (username, password, done) => {
+        try {
+            const user = await User.findOne({ username });
+            if (!user) return done(null, false, { message: 'Incorrect username' });
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) return done(null, false, { message: 'Incorrect password' });
+
+            return done(null, user);
+        } catch (error) {
+            return done(error);
+        }
+    }
+));
+
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
+// Session management
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'secret_key',
+    resave: false,
+    saveUninitialized: true,
 }));
 
 app.use(passport.initialize());
+app.use(passport.session());
 
-// Authenticated route for viewing tournaments (Player and TO)
-app.get('/tournaments', passport.authenticate('jwt', { session: false }), async (req, res) => {
+// Route for User Registration
+app.post('/register', async (req, res) => {
+    const { username, password, role } = req.body;
+
     try {
-        const tournaments = await Tournament.find();
-        res.json(tournaments);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword, role });
+        await newUser.save();
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching tournaments', error });
+        res.status(500).json({ message: 'Error registering user', error });
     }
 });
 
-// Register for a tournament (Player only)
-app.post('/tournaments/:id/register', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    const { id } = req.params;
-    try {
-        const tournament = await Tournament.findById(id);
-        const player = await Player.findById(req.user.id);
-
-        if (!tournament || !player) {
-            return res.status(404).json({ message: 'Tournament or player not found' });
-        }
-
-        if (tournament.status === 'in progress' || tournament.status === 'completed') {
-            return res.status(400).json({ message: 'Cannot register for ongoing or completed tournaments' });
-        }
-
-        tournament.players.push(player._id);
-        await tournament.save();
-
-        // Send an email notification to the player
-        sendEmailNotification(player.email, 'Tournament Registration Successful', `You have successfully registered for the tournament: ${tournament.name}`);
-
-        res.json({ message: 'Successfully registered for the tournament', tournament });
-    } catch (error) {
-        res.status(500).json({ message: 'Error registering for the tournament', error });
-    }
+// Route for User Login
+app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), (req, res) => {
+    res.status(200).json({ message: 'Logged in successfully' });
 });
 
-// Create a new tournament (Tournament Official only)
-app.post('/tournaments', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    const { name, date, format } = req.body;
-    const user = await Player.findById(req.user.id);
+// Root Route (Home Page or testing route)
+app.get('/', (req, res) => {
+    res.send('Welcome to the Cue Sports Club Tournament Management System');
+});
 
-    if (user.role !== 'tournament_official') {
+// Other routes (create tournament, register, etc.)
+app.post('/tournaments', async (req, res) => {
+    if (req.user.role !== 'tournament_official') {
         return res.status(403).json({ message: 'Only tournament officials can create tournaments' });
     }
 
-    try {
-        const newTournament = new Tournament({ name, date, format, status: 'open' });
-        await newTournament.save();
+    const { name, date, format } = req.body;
 
+    try {
+        const newTournament = new Tournament({ name, date, format });
+        await newTournament.save();
         res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
     } catch (error) {
         res.status(500).json({ message: 'Error creating tournament', error });
     }
 });
 
-// Input match score (TO)
-app.post('/matches', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    const { tournamentId, player1Id, player2Id, score1, score2 } = req.body;
-    const user = await Player.findById(req.user.id);
+// Other routes continue...
 
-    if (user.role !== 'tournament_official') {
-        return res.status(403).json({ message: 'Only tournament officials can input scores' });
-    }
-
-    try {
-        const match = new Match({ tournament: tournamentId, player1: player1Id, player2: player2Id, score1, score2 });
-        match.winner = score1 > score2 ? player1Id : player2Id;
-        await match.save();
-
-        // Update the tournament status based on match results (optional)
-        const tournament = await Tournament.findById(tournamentId);
-        if (tournament) {
-            // Here you can check if the tournament is finished based on remaining matches and update status
-        }
-
-        res.status(201).json({ message: 'Match score updated', match });
-    } catch (error) {
-        res.status(500).json({ message: 'Error inputting match score', error });
-    }
-});
-
-// Email notification function (using nodemailer)
-const sendEmailNotification = (recipientEmail, subject, text) => {
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD,
-        },
-    });
-
-    const mailOptions = {
-        from: process.env.EMAIL_USERNAME,
-        to: recipientEmail,
-        subject: subject,
-        text: text,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log('Error sending email:', error);
-        } else {
-            console.log('Email sent:', info.response);
-        }
-    });
-};
-
-// Start the server
+// Start Server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
