@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tailwind": "tailwindcss"
+    "tailwind": "tailwindcss",
+    "start": "concurrently \"vite\" \"node server.js\""
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",

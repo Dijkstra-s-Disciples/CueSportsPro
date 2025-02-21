@@ -15,6 +15,11 @@ const app = express();
 // Enable CORS for all routes
 app.use(cors());
 
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
+
 // Middleware to parse JSON
 app.use(express.json());
 
@@ -119,18 +124,31 @@ app.get('/', (req, res) => {
 
 // Other routes (create tournament, register, etc.)
 app.post('/tournaments', async (req, res) => {
-    if (req.user.role !== 'tournament_official') {
-        return res.status(403).json({ message: 'Only tournament officials can create tournaments' });
-    }
+    console.log("Received POST request:", req.body); // Debugging Log
 
     const { name, date, format } = req.body;
+    if (!name || !date || !format) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
 
     try {
         const newTournament = new Tournament({ name, date, format });
         await newTournament.save();
         res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
     } catch (error) {
-        res.status(500).json({ message: 'Error creating tournament', error });
+        console.error("Error creating tournament:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+});
+
+
+// Route to fetch all tournaments
+app.get('/tournaments', async (req, res) => {
+    try {
+        const tournaments = await Tournament.find().populate('players');
+        res.json(tournaments);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching tournaments', error });
     }
 });
 
