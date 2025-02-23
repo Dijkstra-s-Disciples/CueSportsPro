@@ -33,7 +33,19 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['player', 'tournament_official'], default: 'player' },
+    wins: { type: Number, default: 0 },  // Track wins
+    losses: { type: Number, default: 0 } // Track losses
 });
+
+app.get('/players', async (req, res) => {
+    try {
+        const players = await User.find({ role: 'player' }).select('username wins losses');
+        res.json(players);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching players', error });
+    }
+});
+
 
 const User = mongoose.model('User', userSchema);
 
@@ -77,6 +89,44 @@ passport.use(new passportLocal.Strategy(
         }
     }
 ));
+
+app.post('/matches', async (req, res) => {
+    const { tournament, player1, player2, score1, score2 } = req.body;
+
+    if (!tournament || !player1 || !player2 || score1 === undefined || score2 === undefined) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    try {
+        // Determine the winner
+        let winner = null;
+        let loser = null;
+
+        if (score1 > score2) {
+            winner = player1;
+            loser = player2;
+        } else if (score2 > score1) {
+            winner = player2;
+            loser = player1;
+        } else {
+            return res.status(400).json({ message: "Match cannot end in a draw" });
+        }
+
+        // Create and save match result
+        const newMatch = new Match({ tournament, player1, player2, score1, score2, winner, date: new Date() });
+        await newMatch.save();
+
+        // Update Player Stats
+        await User.findByIdAndUpdate(winner, { $inc: { wins: 1 } });
+        await User.findByIdAndUpdate(loser, { $inc: { losses: 1 } });
+
+        res.status(201).json({ message: "Match recorded successfully", match: newMatch });
+    } catch (error) {
+        console.error("Error recording match:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+});
+
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
