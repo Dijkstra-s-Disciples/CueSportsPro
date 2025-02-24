@@ -195,7 +195,16 @@ app.post('/tournaments', async (req, res) => {
 // Route to fetch all tournaments
 app.get('/tournaments', async (req, res) => {
     try {
-        const tournaments = await Tournament.find().populate('players');
+        const tournaments = await Tournament.find({status: "open"}).populate('players');
+        res.json(tournaments);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching tournaments', error });
+    }
+});
+
+app.get('/past-tournaments', async (req, res) => {
+    try {
+        const tournaments = await Tournament.find({status: "closed"}).populate('players');
         res.json(tournaments);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching tournaments', error });
