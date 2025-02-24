@@ -5,6 +5,7 @@ import PlayersList from './components/PlayersList';
 import TournamentList from "./components/TournamentList.jsx";
 import TournamentCreationForm from "./components/TournamentCreationForm.jsx";
 import PastTournaments from "./components/PastTournaments.jsx"; // Import PlayersList component
+import SignIn from './components/SignIn';
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -33,6 +34,7 @@ const App = () => {
                     <Link to="/create-tournament" className="hover:text-gold-400 transition">➕ Create Tournament</Link>
                     <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
                     <Link to="/past-tournaments" className="hover:text-gold-400 transition">Past Tournaments</Link>
+                    <Link to="/signin" className="hover:text-gold-400 transition">🔐 Sign In</Link> {/* New Sign In Button */}
                 </nav>
 
                 {/* Main Content */}
@@ -42,6 +44,7 @@ const App = () => {
                         <Route path="/create-tournament" element={<TournamentCreationForm />} />
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />
+                        <Route path="/signin" element={<SignIn />} />
                     </Routes>
                 </div>
 
