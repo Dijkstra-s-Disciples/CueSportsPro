@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'; // React Router
 import PlayersList from './components/PlayersList'; // Import PlayersList component
+import SignIn from './components/SignIn';
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -29,12 +30,14 @@ const App = () => {
                     <Link to="/" className="hover:text-gold-400 transition">🏆 Home</Link>
                     <Link to="/create-tournament" className="hover:text-gold-400 transition">➕ Create Tournament</Link>
                     <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
+                    <Link to="/signin" className="hover:text-gold-400 transition">🔐 Sign In</Link> {/* New Sign In Button */}
                 </nav>
 
                 {/* Main Content */}
                 <div className="container mx-auto p-6">
                     <Routes>
                         <Route exact path="/" element={<TournamentList tournaments={tournaments} />} />
+                        <Route path="/signin" element={<SignIn />} />
                         <Route path="/create-tournament" element={<TournamentCreationForm newTournament={newTournament} setNewTournament={setNewTournament} />} />
                         <Route path="/players" element={<PlayersList />} />
                     </Routes>
