@@ -4,6 +4,8 @@ import axios from 'axios'; // Import axios to make requests
 
 const TournamentList = ({ tournaments, user }) => {
 
+    console.log("Props in TournamentList:", { tournaments, user }); // Check if user is coming in
+
     // Function to handle registration
     const handleRegister = async (tournamentId) => {
         if (!user) {
@@ -28,6 +30,7 @@ const TournamentList = ({ tournaments, user }) => {
     return (
         <div>
             <h2 className="text-3xl font-bold text-center mb-6">🏆 Upcoming Tournaments</h2>
+            <h2 className="text-3xl font-bold text-center mb-6">{user}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tournaments.length === 0 ? (
                     <p className="text-center">No tournaments available.</p>

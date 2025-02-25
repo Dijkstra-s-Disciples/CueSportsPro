@@ -13,14 +13,6 @@ const App = () => {
     const [tournaments, setTournaments] = useState([]);
     const [user, setUser] = useState(null); // Default to null (Hidden by default)
 
-    // This might need a dependency so it will load when a new one is submitted
-    // Fetch tournaments on component load
-    useEffect(() => {
-        axios.get('http://localhost:5001/tournaments')
-            .then((response) => setTournaments(response.data))
-            .catch((error) => console.log('Error fetching tournaments:', error));
-    }, []);
-
     // Fetch logged-in user
     useEffect(() => {
         axios.get('http://localhost:5001/user', { withCredentials: true })
@@ -29,6 +21,14 @@ const App = () => {
                 setUser(response.data); // Set user data once fetched
             })
             .catch(() => setUser({ role: 'player' })); // Default to 'player' if not authenticated
+    }, []);
+
+    // This might need a dependency so it will load when a new one is submitted
+    // Fetch tournaments on component load
+    useEffect(() => {
+        axios.get('http://localhost:5001/tournaments')
+            .then((response) => setTournaments(response.data))
+            .catch((error) => console.log('Error fetching tournaments:', error));
     }, []);
 
     // Handle Logout
@@ -81,6 +81,7 @@ const App = () => {
                 {/* Main Content */}
                 <div className="container mx-auto p-6">
                     <Routes>
+                        <Route path="/profile" element={<DisplayProfile user={user} />} />
                         <Route exact path="/" element={<TournamentList tournaments={tournaments} />} />
                         <Route path="/signin" element={<SignIn />} />
 
@@ -90,9 +91,8 @@ const App = () => {
                         )}
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />
-                        <Route exact path="/" element={<TournamentList tournaments={tournaments} />} />
+                        <Route exact path="/" element={<TournamentList user={user} tournaments={tournaments} />} />
                         <Route path="/tournament/:id/bracket" element={<Bracket />} />
-                        <Route path="/profile" element={<DisplayProfile user={user} />} />
                     </Routes>
                 </div>
 
@@ -104,10 +104,5 @@ const App = () => {
         </Router>
     );
 };
-
-// {(user !== null)?
-//     <Link to="/profile" className="hover:text-gold-400 transition">Profile</Link>:
-//     <Link to="/signin" className="hover:text-gold-400 transition">🔐 Sign In</Link>
-// }
 
 export default App;
