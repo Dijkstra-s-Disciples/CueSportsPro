@@ -74,7 +74,6 @@ const App = () => {
 
                     <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
                     <Link to="/past-tournaments" className="hover:text-gold-400 transition">Past Tournaments</Link>
-                    <Link to="/signin" className="hover:text-gold-400 transition">🔐 Sign In</Link> {/* New Sign In Button */}
                 </nav>
 
                 {/* Main Content */}
