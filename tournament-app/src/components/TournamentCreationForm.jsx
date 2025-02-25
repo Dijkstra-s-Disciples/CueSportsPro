@@ -24,7 +24,8 @@ const TournamentCreationForm = () => {
                     />
                     <input
                         type="date"
-                        className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded-md"
+                        className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded-md
+                        [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:sepia [&::-webkit-calendar-picker-indicator]:saturate-200 [&::-webkit-calendar-picker-indicator]:hue-rotate-180"
                         name="date"
                     />
                     <select

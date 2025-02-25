@@ -217,9 +217,36 @@ app.get('/past-tournaments', async (req, res) => {
     }
 });
 
+app.post('/register-player', async (req, res) => {
+    const { user, tournament } = req.body;
+
+    if (!user || !tournament) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Find the tournament by ID
+    const tourn = await Tournament.findOne({ _id: tournament });
+    if (!tourn) {
+        return res.status(404).json({ message: "There is no tournament with the given ID" });
+    }
+
+    // Assuming user is an object with _id (user._id) since it's a mongoose document
+    // Check if the user's _id is in the players array (which holds ObjectIds)
+    if (!tourn.players.includes(user._id)) {
+        await Tournament.updateOne({ _id: tournament }, { $push: { players: user._id } });
+    }
+
+    return res.status(200).json({ message: "User added to tournament successfully" });
+});
+
 // ✅ Root Route
 app.get('/', (req, res) => {
     res.send('Welcome to the Cue Sports Club Tournament Management System');
+});
+
+app.get('/test-user', async (req, res) => {
+    const test = await User.findOne({username:"Devin Mihaichuk"})
+    res.json(test);
 });
 
 // ✅ Start Server
