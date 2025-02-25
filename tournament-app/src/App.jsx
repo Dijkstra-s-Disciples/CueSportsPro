@@ -7,6 +7,7 @@ import TournamentCreationForm from "./components/TournamentCreationForm.jsx";
 import PastTournaments from "./components/PastTournaments.jsx"; // Import PlayersList component
 import SignIn from './components/SignIn';
 import DisplayProfile from "./components/Profile.jsx";
+import Bracket from './components/Bracket';
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -89,6 +90,8 @@ const App = () => {
                         )}
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />
+                        <Route exact path="/" element={<TournamentList tournaments={tournaments} />} />
+                        <Route path="/tournament/:id/bracket" element={<Bracket />} />
                         <Route path="/profile" element={<DisplayProfile user={user} />} />
                     </Routes>
                 </div>

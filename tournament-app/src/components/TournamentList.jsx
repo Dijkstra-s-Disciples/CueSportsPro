@@ -1,31 +1,29 @@
-import React, {useEffect, useState} from "react";
-import axios from 'axios';
+import React from "react";
+import { Link } from 'react-router-dom';
+import axios from 'axios'; // Import axios to make requests
 
-const TournamentList = ({ tournaments }) => {
-    const [user, setUser] = useState(null)
+const TournamentList = ({ tournaments, user }) => {
 
-    useEffect(() => {
-        axios.get('http://localhost:5001/user')
-        .then(response => setUser(response.data))
-
-        // vvv Uncomment below for testing before authorization is fixed vvv
-        // axios.get('http://localhost:5001/test-user')
-        //     .then((response) => {setUser(response.data)})
-        //     .then(() => console.log(user))
-    }, [user]);
-
-    const register = (tournament) => {
+    // Function to handle registration
+    const handleRegister = async (tournamentId) => {
         if (!user) {
-            alert(`You must be logged in to register`);
+            alert('You must be signed in to register.');
             return;
         }
 
-        console.log(user);
-        console.log(user.username);
-        axios.post('http://localhost:5001/register-player', {user: user, tournament: tournament})
-            .then(() => console.log(`${user.username} successfully registered`))
-            .catch(error => alert(`${error}: You were not registered for this tournament.`));
-    }
+        try {
+            // Ensure withCredentials is set to true to send the session cookie
+            const response = await axios.post(
+                `http://localhost:5001/tournament/${tournamentId}/register`,
+                { userId: user._id }, // Send userId of the logged-in user
+                { withCredentials: true } // Important: sends cookies/session with the request
+            );
+            alert(response.data.message);
+        } catch (error) {
+            alert('Error registering for the tournament.');
+            console.error(error);
+        }
+    };
 
     return (
         <div>
@@ -39,11 +37,23 @@ const TournamentList = ({ tournaments }) => {
                             <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
                             <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
                             <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
-                            <button onClick={() => {register(tournament._id)}}
-                                    className="mt-4 w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
-                            >
-                                Register
-                            </button>
+                            <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
+
+                            <div className="mt-4 flex space-x-4">
+                                {/* Register Button */}
+                                <button
+                                    onClick={() => handleRegister(tournament._id)}
+                                    className="w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
+                                    disabled={tournament.players.length >= 32}
+                                >
+                                    {tournament.players.length >= 32 ? 'Tournament Full' : 'Register'}
+                                </button>
+
+                                {/* View Bracket Button */}
+                                <Link to={`/tournament/${tournament._id}/bracket`} className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition text-center">
+                                    View Bracket
+                                </Link>
+                            </div>
                         </div>
                     ))
                 )}
