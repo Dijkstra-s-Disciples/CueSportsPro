@@ -23,7 +23,8 @@ app.use(express.json());
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secret_key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { secure: false } // Set secure: true if using HTTPS in production
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -46,13 +47,16 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 // ✅ Tournament Schema
+// Tournament Schema in server.js
 const tournamentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: Date, required: true },
     format: { type: String, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
-    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Initially empty
 });
+
+
 const Tournament = mongoose.model('Tournament', tournamentSchema);
 
 // ✅ Match Schema
@@ -145,11 +149,12 @@ app.post('/logout', (req, res) => {
 
 app.get('/user', (req, res) => {
     if (req.isAuthenticated()) {
-        res.json(req.user);
+        res.json(req.user); // Sends the authenticated user's data
     } else {
         res.status(401).json({ message: 'Not authenticated' });
     }
 });
+
 
 // ✅ Player List Endpoint
 app.get('/players', async (req, res) => {
@@ -173,6 +178,16 @@ app.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Error registering user', error });
     }
 });
+
+app.post('/tournament/:id/register', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        console.log('User not authenticated');
+        return res.status(401).json({ message: 'You must be signed in to register.' });
+    }
+    console.log('User authenticated', req.user);
+    // Continue with the registration logic
+});
+
 
 // ✅ User Login (Local)
 app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), (req, res) => {
@@ -217,6 +232,72 @@ app.get('/past-tournaments', async (req, res) => {
     }
 });
 
+// Fetch bracket data for a specific tournament
+// Backend - Get the bracket for a specific tournament
+app.get('/tournament/:id/bracket', async (req, res) => {
+    const tournamentId = req.params.id; // Extract tournament id from URL
+
+    try {
+        if (!tournamentId) {
+            return res.status(400).json({ message: 'Tournament ID is missing' });
+        }
+
+        // Ensure the tournament ID is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(tournamentId)) {
+            return res.status(400).json({ message: 'Invalid tournament ID' });
+        }
+
+        const tournament = await Tournament.findById(tournamentId).populate('players');
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        res.json(tournament);
+    } catch (error) {
+        console.error('Error fetching bracket:', error);
+        res.status(500).json({ message: 'Error fetching bracket', error });
+    }
+});
+
+// Register a player for a specific match in the tournament
+// Player registration route
+app.post('/tournament/:id/register', async (req, res) => {
+    const tournamentId = req.params.id;
+    const { userId } = req.body; // The userId of the logged-in player attempting to register
+
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to register.' });
+    }
+
+    try {
+        const tournament = await Tournament.findById(tournamentId);
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        if (tournament.players.length >= 32) {
+            return res.status(400).json({ message: 'Tournament is already full.' });
+        }
+
+        if (tournament.players.includes(userId)) {
+            return res.status(400).json({ message: 'You are already registered for this tournament.' });
+        }
+
+        // Add the player to the tournament's players array
+        tournament.players.push(userId);
+        await tournament.save();
+
+        res.status(200).json({ message: 'Successfully registered for the tournament!' });
+    } catch (error) {
+        console.error('Error registering for tournament:', error);
+        res.status(500).json({ message: 'Error registering for the tournament', error });
+    }
+});
+
+
+
 // ✅ Root Route
 app.get('/', (req, res) => {
     res.send('Welcome to the Cue Sports Club Tournament Management System');
@@ -227,3 +308,4 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
+
