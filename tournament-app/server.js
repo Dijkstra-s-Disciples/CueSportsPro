@@ -84,7 +84,6 @@ passport.use(new passportLocal.Strategy(
     }
 ));
 
-// ✅ Google OAuth Strategy Configuration
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -110,7 +109,6 @@ passport.use(new GoogleStrategy({
     }
 }));
 
-// ✅ Serialize and Deserialize User for Session
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
     try {
