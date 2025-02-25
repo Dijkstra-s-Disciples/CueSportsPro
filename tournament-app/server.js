@@ -296,11 +296,14 @@ app.post('/tournament/:id/register', async (req, res) => {
     }
 });
 
-
-
 // ✅ Root Route
 app.get('/', (req, res) => {
     res.send('Welcome to the Cue Sports Club Tournament Management System');
+});
+
+app.get('/test-user', async (req, res) => {
+    const test = await User.findOne({username:"Devin Mihaichuk"})
+    res.json(test);
 });
 
 // ✅ Start Server
