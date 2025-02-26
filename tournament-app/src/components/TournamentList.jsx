@@ -11,15 +11,10 @@ const TournamentList = ({ tournaments, user }) => {
             return;
         }
 
-        try {
-            // Ensure withCredentials is set to true to send the session cookie
-            axios.post(`http://localhost:5001/tournament/${tournamentId}/register`, { userId: user._id }, { withCredentials: true })
-                .then(response => {alert(response.data.message);})
-                .catch(error => alert('Error registering for the tournament:' + error));
-        } catch (error) {
-            alert('Error registering for the tournament.');
-            console.error(error);
-        }
+        // Ensure withCredentials is set to true to send the session cookie
+        axios.post(`http://localhost:5001/tournament/${tournamentId}/register`, { userId: user._id }, { withCredentials: true })
+            .then(response => {console.log(response.data.message); window.location.href="/";})
+            .catch(error => alert('Error registering for the tournament:' + error));
     };
 
     const handleWithdraw = async (tournamentId) => {
@@ -28,14 +23,9 @@ const TournamentList = ({ tournaments, user }) => {
             return;
         }
 
-
-        axios.post(
-            `http://localhost:5001/tournament/${tournamentId}/withdraw`,
-            { userId: user._id }, // Send userId of the logged-in user
-            { withCredentials: true } // Important: sends cookies/session with the request
-        )
-            .then(response => {alert(response.data.message);})
-            .catch(error => alert(error));
+        axios.post(`http://localhost:5001/tournament/${tournamentId}/withdraw`, { userId: user._id }, { withCredentials: true })
+            .then(response => {console.log(response.data.message); window.location.href="/";})
+            .catch(error => alert('Error withdrawing from the tournament:' + error));
     };
 
     const handleOfficiate = async (tournamentId) => {
