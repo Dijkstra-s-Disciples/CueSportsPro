@@ -180,16 +180,6 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post('/tournament/:id/register', async (req, res) => {
-    if (!req.isAuthenticated()) {
-        console.log('User not authenticated');
-        return res.status(401).json({ message: 'You must be signed in to register.' });
-    }
-    console.log('User authenticated', req.user);
-    // Continue with the registration logic
-});
-
-
 // ✅ User Login (Local)
 app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), (req, res) => {
     res.status(200).json({ message: 'Logged in successfully' });
@@ -265,7 +255,7 @@ app.get('/tournament/:id/bracket', async (req, res) => {
 // Player registration route
 app.post('/tournament/:id/register', async (req, res) => {
     const tournamentId = req.params.id;
-    const { userId } = req.body; // The userId of the logged-in player attempting to register
+    const { userId } = req.body;
 
     // Check if the user is authenticated
     if (!req.isAuthenticated()) {
@@ -295,6 +285,35 @@ app.post('/tournament/:id/register', async (req, res) => {
     } catch (error) {
         console.error('Error registering for tournament:', error);
         res.status(500).json({ message: 'Error registering for the tournament', error });
+    }
+});
+
+app.post('/tournament/:id/withdraw', async (req, res) => {
+    const tournamentId = req.params.id;
+    const { userId } = req.body; // The userId of the logged-in player attempting to register
+
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to withdraw.' });
+    }
+
+    try {
+        const tournament = await Tournament.findById(tournamentId).populate('players');
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        if (tournament.players.find(player => player._id.toString() === userId.toString()) === undefined) {
+            return res.status(400).json({ message: 'You are not already registered for this tournament.' });
+        }
+        tournament.players = tournament.players.filter(player => player._id.toString() !== userId.toString());
+        await tournament.save();
+
+        res.status(200).json({ message: 'Successfully withdrawn from the tournament!' });
+    } catch (error) {
+        console.error('Error withdrawing from tournament:', error);
+        res.status(500).json({ message: 'Error withdrawing from the tournament', error });
     }
 });
 
