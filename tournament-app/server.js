@@ -52,7 +52,8 @@ const User = mongoose.model('User', userSchema);
 const tournamentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: Date, required: true },
-    time: { type: String, required: true },
+    time: { type: String, required: true},
+    ruleset: { type: String, required: true },
     format: { type: String, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Initially empty
@@ -229,14 +230,14 @@ app.post('/login', passport.authenticate('local', { failureRedirect: '/login' })
 // ✅ Create a Tournament
 app.post('/tournaments', async (req, res) => {
     console.log("Received POST request:", req.body);
-    const { name, date, time, format } = req.body;
+    const { name, date, time, ruleset, format } = req.body;
 
-    if (!name || !date || !time || !format) {
+    if (!name || !date || !time || !ruleset || !format) {
         return res.status(400).json({ message: "Missing required fields" });
     }
 
     try {
-        const newTournament = new Tournament({ name, date, time, format });
+        const newTournament = new Tournament({ name, date, time, ruleset, format });
         await newTournament.save();
 
         // Send email to all players after tournament creation
