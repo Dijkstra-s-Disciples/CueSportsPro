@@ -53,7 +53,7 @@ const App = () => {
                     {/* User Icon & Logout Button */}
                     {user && user.username ? (
                         <div className="flex items-center space-x-4">
-                            <Link to="/profile" className="text-lg">👤 {user.username}</Link>
+                            <Link to={`/profile/${user._id}`} className="text-lg">👤 {user.username}</Link>
                             <button
                                 onClick={handleLogout}
                                 className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
@@ -81,7 +81,6 @@ const App = () => {
                 {/* Main Content */}
                 <div className="container mx-auto p-6">
                     <Routes>
-                        <Route path="/profile" element={<DisplayProfile user={user} />} />
                         <Route path="/signin" element={<SignIn />} />
 
                         {/* Hide the "Create Tournament" page from players by default */}
@@ -92,6 +91,7 @@ const App = () => {
                         <Route path="/past-tournaments" element={<PastTournaments />} />
                         <Route exact path="/" element={<TournamentList user={user} tournaments={tournaments} />} />
                         <Route path="/tournament/:id/bracket" element={<Bracket />} />
+                        <Route path="/profile/:userID" element={<DisplayProfile />} />
                     </Routes>
                 </div>
 

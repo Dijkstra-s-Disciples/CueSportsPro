@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 
 const Bracket = () => {
     const { id } = useParams(); // Get the tournament ID from the URL
@@ -60,9 +60,21 @@ const Bracket = () => {
                 {round.map((match, matchIndex) => (
                     <div key={matchIndex} className="match w-1/4 mx-4 bg-gray-800 p-4 rounded-lg shadow-lg">
                         <div className="matchup text-center text-lg mb-4">
-                            <span className="player text-white">{match.player1 ? match.player1.username : 'TBD'}</span>
+                            {match.player1 ? (
+                                <Link to={`/profile/${match.player1._id}`} className="player text-white">
+                                    {match.player1.username}
+                                </Link>
+                            ) : (
+                                <span className="player text-white">TBD</span>
+                            )}
                             <span className="vs text-white mx-2">vs</span>
-                            <span className="player text-white">{match.player2 ? match.player2.username : 'TBD'}</span>
+                            {match.player2 ? (
+                                <Link to={`/profile/${match.player2._id}`} className="player text-white">
+                                    {match.player2.username}
+                                </Link>
+                            ) : (
+                                <span className="player text-white">TBD</span>
+                            )}
                         </div>
                         {/* Dropdown for selecting winner */}
                         <select
