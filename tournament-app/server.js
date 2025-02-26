@@ -306,9 +306,24 @@ app.get('/test-user', async (req, res) => {
     res.json(test);
 });
 
+app.get('/member/:id', async (req, res) => {
+    const memberId = req.params.id;
+
+    try {
+        const user = await User.findById(memberId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Error finding user:', error);
+        res.status(500).json({ message: 'Error finding user', error });
+    }
+});
+
 // ✅ Start Server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
-
