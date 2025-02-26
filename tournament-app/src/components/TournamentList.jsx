@@ -4,8 +4,6 @@ import axios from 'axios'; // Import axios to make requests
 
 const TournamentList = ({ tournaments, user }) => {
 
-    console.log("Props in TournamentList:", { tournaments, user }); // Check if user is coming in
-
     // Function to handle registration
     const handleRegister = async (tournamentId) => {
         if (!user) {
@@ -15,12 +13,9 @@ const TournamentList = ({ tournaments, user }) => {
 
         try {
             // Ensure withCredentials is set to true to send the session cookie
-            const response = await axios.post(
-                `http://localhost:5001/tournament/${tournamentId}/register`,
-                { userId: user._id }, // Send userId of the logged-in user
-                { withCredentials: true } // Important: sends cookies/session with the request
-            );
-            alert(response.data.message);
+            axios.post(`http://localhost:5001/tournament/${tournamentId}/register`, { userId: user._id }, { withCredentials: true })
+                .then(response => {alert(response.data.message);})
+                .catch(error => alert('Error registering for the tournament:' + error));
         } catch (error) {
             alert('Error registering for the tournament.');
             console.error(error);
@@ -33,18 +28,14 @@ const TournamentList = ({ tournaments, user }) => {
             return;
         }
 
-        try {
-            // Ensure withCredentials is set to true to send the session cookie
-            const response = await axios.post(
-                `http://localhost:5001/tournament/${tournamentId}/withdraw`,
-                { userId: user._id }, // Send userId of the logged-in user
-                { withCredentials: true } // Important: sends cookies/session with the request
-            );
-            alert(response.data.message);
-        } catch (error) {
-            alert('Error withdrawing from the tournament.');
-            console.error(error);
-        }
+
+        axios.post(
+            `http://localhost:5001/tournament/${tournamentId}/withdraw`,
+            { userId: user._id }, // Send userId of the logged-in user
+            { withCredentials: true } // Important: sends cookies/session with the request
+        )
+            .then(response => {alert(response.data.message);})
+            .catch(error => alert(error));
     };
 
     const handleOfficiate = async (tournamentId) => {
@@ -68,11 +59,9 @@ const TournamentList = ({ tournaments, user }) => {
         }
     };
 
-
     return (
         <div>
             <h2 className="text-3xl font-bold text-center mb-6">🏆 Upcoming Tournaments</h2>
-            <h2 className="text-3xl font-bold text-center mb-6">{user}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tournaments.length === 0 ? (
                     <p className="text-center">No tournaments available.</p>
@@ -85,12 +74,11 @@ const TournamentList = ({ tournaments, user }) => {
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 
                             <div className="mt-4 flex space-x-4">
-                                {/* Register Button */}
-
                                 {/* TODO: need to refactor below statements so they cannot register for a tournament they are officiating*/}
-                                {user && (
+                                {user && user.username ? (
                                     <>
-                                        {tournament.players.includes(user._id) ? (
+                                    {console.log(user)}
+                                        {tournament.players.find(player => player._id === user._id) !== undefined ? (
                                             <button
                                                 onClick={() => handleWithdraw(tournament._id)}
                                                 className="w-full bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
@@ -116,18 +104,8 @@ const TournamentList = ({ tournaments, user }) => {
                                             </button>
                                         )}
                                     </>
-                                )}
+                                ) : null}
 
-                                {/*Uncomment below and comment above for testing before user bug is fixed*/}
-                                {/*<button*/}
-                                {/*    onClick={() => handleRegister(tournament._id)}*/}
-                                {/*    className="w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"*/}
-                                {/*    disabled={tournament.players.length >= 32}*/}
-                                {/*>*/}
-                                {/*    {tournament.players.length >= 32 ? "Tournament Full" : "Register"}*/}
-                                {/*</button>*/}
-
-                                {/* View Bracket Button */}
                                 <Link to={`/tournament/${tournament._id}/bracket`} className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition text-center">
                                     View Bracket
                                 </Link>

@@ -20,7 +20,7 @@ const App = () => {
                 console.log("Authenticated User:", response.data);
                 setUser(response.data); // Set user data once fetched
             })
-            .catch(() => setUser({ role: 'player' })); // Default to 'player' if not authenticated
+            .catch(() => setUser({ role: 'player' }));
     }, []);
 
     // This might need a dependency so it will load when a new one is submitted
@@ -82,7 +82,6 @@ const App = () => {
                 <div className="container mx-auto p-6">
                     <Routes>
                         <Route path="/profile" element={<DisplayProfile user={user} />} />
-                        <Route exact path="/" element={<TournamentList tournaments={tournaments} />} />
                         <Route path="/signin" element={<SignIn />} />
 
                         {/* Hide the "Create Tournament" page from players by default */}
