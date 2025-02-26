@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {Link} from "react-router-dom";
 
 const PlayersList = () => {
     const [players, setPlayers] = useState([]);
@@ -19,7 +20,7 @@ const PlayersList = () => {
                 ) : (
                     players.map((player) => (
                         <div key={player._id} className="border p-4 mb-4">
-                            <h3 className="font-semibold">{player.username}</h3>
+                            <Link to={`/profile/${player._id}`} className="font-semibold">👤 {player.username}</Link>
                             <p>Wins: {player.wins}</p>
                             <p>Losses: {player.losses}</p>
                         </div>
