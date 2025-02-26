@@ -61,6 +61,7 @@ const TournamentList = ({ tournaments, user }) => {
                             <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
                             <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
                             <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
+                            <p className="text-sm text-gray-300">📜 Rules: {tournament.ruleset}</p>
                             <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 

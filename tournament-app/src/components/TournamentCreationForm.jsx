@@ -6,7 +6,7 @@ const TournamentCreationForm = () => {
     const submitNewTournament = (event) => {
         event.preventDefault();
         const formData = new FormData(formRef.current);
-        axios.post('http://localhost:5001/tournaments', {name: formData.get("name"), date: formData.get("date"), time: formData.get("time"), format: formData.get("format")})
+        axios.post('http://localhost:5001/tournaments', {name: formData.get("name"), date: formData.get("date"), time: formData.get("time"), ruleset: formData.get("rule-set"), format: formData.get("format")})
             .then((response) => {console.log(response.data); window.location.href="/";})
             .catch((error) => console.log('Error posting new tournament:', error));
         //formRef.current.reset();
@@ -35,6 +35,17 @@ const TournamentCreationForm = () => {
                         placeholder="Start Time (example: 12:30 pm, 1:30 AM, 02:30 PM)"
                         pattern="(1[0-2]|0?[0-9]):(0[0-9]|[1-5][0-9]|60)\s([aApP][mM])"
                     />
+                    <select
+                        className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded-md"
+                        name="rule-set"
+                    >
+                        <option value="Singles 8-Ball">Singles 8-Ball</option>
+                        <option value="Singles 9-Ball">Singles 9-Ball</option>
+                        <option value="Singles 10-Ball">Singles 10-Ball</option>
+                        <option value="Doubles 8-Ball">Doubles 8-Ball</option>
+                        <option value="Doubles 9-Ball">Doubles 9-Ball</option>
+                        <option value="Doubles 10-Ball">Doubles 10-Ball</option>
+                    </select>
                     <select
                         className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded-md"
                         name="format"
