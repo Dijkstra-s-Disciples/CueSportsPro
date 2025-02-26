@@ -43,14 +43,17 @@ const TournamentList = ({ tournaments, user }) => {
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 
                             <div className="mt-4 flex space-x-4">
-                                {/* Register Button */}
-                                <button
-                                    onClick={() => handleRegister(tournament._id)}
-                                    className="w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
-                                    disabled={tournament.players.length >= 32}
-                                >
-                                    {tournament.players.length >= 32 ? 'Tournament Full' : 'Register'}
-                                </button>
+
+                                {/* Uncomment the two below lines once user bug is fixed */}
+                                {/*{user && (*/}
+                                    <button
+                                        onClick={() => handleRegister(tournament._id)}
+                                        className="w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
+                                        disabled={tournament.players.length >= 32}
+                                    >
+                                        {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                    </button>
+                                {/*)}*/}
 
                                 {/* View Bracket Button */}
                                 <Link to={`/tournament/${tournament._id}/bracket`} className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition text-center">
