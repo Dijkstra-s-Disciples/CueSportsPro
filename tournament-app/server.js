@@ -7,6 +7,8 @@ import passportLocal from 'passport-local';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import cors from 'cors';
+import nodemailer from 'nodemailer';
+
 
 dotenv.config();
 
@@ -46,8 +48,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// ✅ Tournament Schema
-// Tournament Schema in server.js
+// Tournament Schema
 const tournamentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: Date, required: true },
@@ -56,7 +57,9 @@ const tournamentSchema = new mongoose.Schema({
     format: { type: String, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Initially empty
+    tournamentOfficial: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null } // New field
 });
+
 
 
 const Tournament = mongoose.model('Tournament', tournamentSchema);
@@ -157,6 +160,44 @@ app.get('/user', (req, res) => {
     }
 });
 
+// Backend - Set tournament official
+app.post('/tournament/:id/officiate', async (req, res) => {
+    const tournamentId = req.params.id;
+    const { userId } = req.body;
+
+    // Check if the user is authenticated and has the 'tournament-official' role
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to officiate.' });
+    }
+
+    if (req.user.role !== 'tournament-official') {
+        return res.status(403).json({ message: 'You do not have permission to officiate a tournament.' });
+    }
+
+    try {
+        // Find the tournament
+        const tournament = await Tournament.findById(tournamentId);
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        // If the tournament already has an official, prevent assigning a new one
+        if (tournament.tournamentOfficial) {
+            return res.status(400).json({ message: 'This tournament already has an official.' });
+        }
+
+        // Assign the tournament official
+        tournament.tournamentOfficial = userId;
+        await tournament.save();
+
+        res.status(200).json({ message: 'Tournament official assigned successfully!' });
+    } catch (error) {
+        console.error('Error officiating the tournament:', error);
+        res.status(500).json({ message: 'Error officiating the tournament', error });
+    }
+});
+
 
 // ✅ Player List Endpoint
 app.get('/players', async (req, res) => {
@@ -198,6 +239,10 @@ app.post('/tournaments', async (req, res) => {
     try {
         const newTournament = new Tournament({ name, date, time, ruleset, format });
         await newTournament.save();
+
+        // Send email to all players after tournament creation
+        await sendEmailToPlayers(name); // Pass the tournament name
+
         res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
 
     } catch (error) {
@@ -215,6 +260,15 @@ app.get('/tournaments', async (req, res) => {
         res.status(500).json({ message: 'Error fetching tournaments', error });
     }
 });
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // Use 'gmail' for Gmail, or use a different service for production
+    auth: {
+        user: process.env.EMAIL, // Use your email address here
+        pass: process.env.EMAIL_PASSWORD, // Use your email password here
+    },
+});
+
 
 app.get('/past-tournaments', async (req, res) => {
     try {
@@ -317,6 +371,29 @@ app.post('/tournament/:id/withdraw', async (req, res) => {
         res.status(500).json({ message: 'Error withdrawing from the tournament', error });
     }
 });
+
+// ✅ Send email function
+const sendEmailToPlayers = async (tournamentName) => {
+    try {
+        const players = await User.find({ role: 'player' });
+
+        for (const player of players) {
+            const mailOptions = {
+                from: process.env.EMAIL, // Sender address
+                to: player.email, // List of recipients (player's email)
+                subject: `New Tournament Available: ${tournamentName}`, // Subject line
+                text: `Hello ${player.username},\n\nA new tournament has been created: ${tournamentName}.\n\nYou can now sign up to participate. Don't miss out!\n\nBest regards,\nCue Sports Club Tournament Management`, // Body of the email
+            };
+
+            // Send email
+            await transporter.sendMail(mailOptions);
+        }
+        console.log('Emails sent successfully to all players!');
+    } catch (error) {
+        console.error('Error sending emails:', error);
+    }
+};
+
 
 // ✅ Root Route
 app.get('/', (req, res) => {

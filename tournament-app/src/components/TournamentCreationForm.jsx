@@ -32,7 +32,7 @@ const TournamentCreationForm = () => {
                         type="text"
                         className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded-md"
                         name="time"
-                        placeholder="Start Time (example: 12:30 pm, 1:30 AM, 02:30 PM)"
+                        placeholder="Start Time (example: 12:30 pm, 1:30 am, 02:30 pm)"
                         pattern="(1[0-2]|0?[0-9]):(0[0-9]|[1-5][0-9]|60)\s([aApP][mM])"
                     />
                     <select
