@@ -12,6 +12,7 @@ const TournamentList = ({ tournaments }) => (
                     <div key={tournament._id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gold-500">
                         <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
                         <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
+                        <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
                         <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
                         <button
                             className="mt-4 w-full bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
