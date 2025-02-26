@@ -296,6 +296,37 @@ app.post('/tournament/:id/register', async (req, res) => {
     }
 });
 
+app.post('/tournament/:id/register', async (req, res) => {
+    const tournamentId = req.params.id;
+    const { userId } = req.body; // The userId of the logged-in player attempting to register
+
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to withdraw.' });
+    }
+
+    try {
+        const tournament = await Tournament.findById(tournamentId);
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        if (!tournament.players.includes(userId)) {
+            return res.status(400).json({ message: 'You are not already registered for this tournament.' });
+        }
+
+        // Add the player to the tournament's players array
+        tournament.players = tournament.players.filter(player => player !== userId);
+        await tournament.save();
+
+        res.status(200).json({ message: 'Successfully withdrawn from the tournament!' });
+    } catch (error) {
+        console.error('Error withdrawing from tournament:', error);
+        res.status(500).json({ message: 'Error withdrawing from the tournament', error });
+    }
+});
+
 // ✅ Root Route
 app.get('/', (req, res) => {
     res.send('Welcome to the Cue Sports Club Tournament Management System');
