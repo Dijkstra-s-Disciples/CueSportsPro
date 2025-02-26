@@ -30,7 +30,8 @@
     "passport-local": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^6.29.0"
+    "react-router-dom": "^6.29.0",
+    "safe-buffer": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
