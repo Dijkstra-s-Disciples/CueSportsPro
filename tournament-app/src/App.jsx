@@ -10,6 +10,8 @@ import DisplayProfile from "./components/Profile.jsx";
 import EditProfile from "./components/EditProfile.jsx";
 import Bracket from './components/Bracket';
 import Settings from './components/Settings';
+import InSession from './components/InSession'; // Import the InSession component
+import TournamentPlayers from './components/TournamentPlayers'; // Import the new TournamentPlayers component
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -105,6 +107,7 @@ const App = () => {
                     )}
                     <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
                     <Link to="/past-tournaments" className="hover:text-gold-400 transition">Past Tournaments</Link>
+                    <Link to="/now-in-session" className="hover:text-gold-400 transition">🏁 Now In Session</Link> {/* New Link */}
                 </nav>
 
                 {/* Main Content */}
@@ -122,6 +125,8 @@ const App = () => {
                         <Route path="/EditProfile/:userID" element={<EditProfile />} />
                         <Route path="/settings/:userID" element={<Settings />} />
                         <Route path="/change-profile" element={<h2 className="text-center text-2xl">Change Profile Page</h2>} />
+                        <Route path="/now-in-session" element={<InSession />} /> {/* New Route */}
+                        <Route path="/tournament/:id/players" element={<TournamentPlayers />} /> {/* View Players Route */}
                     </Routes>
                 </div>
 
