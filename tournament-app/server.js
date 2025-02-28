@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
+import User from './src/models/Users.js'; //
+
 
 
 dotenv.config();
@@ -36,17 +38,6 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('✅ MongoDB connected'))
     .catch((err) => console.log('❌ MongoDB connection error:', err));
 
-// ✅ User Schema
-const userSchema = new mongoose.Schema({
-    googleId: { type: String, unique: true, sparse: true }, // Google login
-    username: { type: String, unique: true, sparse: true },
-    password: { type: String },
-    email: { type: String, unique: true, sparse: true },
-    role: { type: String, enum: ['player', 'tournament_official'], default: 'player' },
-    wins: { type: Number, default: 0 },
-    losses: { type: Number, default: 0 }
-});
-const User = mongoose.model('User', userSchema);
 
 // Tournament Schema
 // Tournament Schema
@@ -590,6 +581,35 @@ app.get('/member/:id', async (req, res) => {
         res.status(500).json({ message: 'Error finding user', error });
     }
 });
+app.put('/member/:id', async (req, res) => {
+    const memberId = req.params.id; // ✅ Extract user ID from URL
+    const updateData = req.body; // ✅ Get updated fields dynamically
+
+    console.log("🔹 Received update request for user ID:", memberId);
+    console.log("🔹 Update Data:", updateData); // Debugging
+
+    try {
+        // ✅ Find user by `_id` instead of `googleId`
+        const updatedUser = await User.findByIdAndUpdate(
+            memberId,
+            updateData, // ✅ Update only the provided fields
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            console.log("❌ User not found in database.");
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        console.log("✅ Profile/settings updated successfully:", updatedUser);
+        res.status(200).json({ message: 'Update successful', user: updatedUser });
+    } catch (error) {
+        console.error('❌ Error updating user:', error);
+        res.status(500).json({ message: 'Error updating user', error });
+    }
+});
+
+
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5001;
