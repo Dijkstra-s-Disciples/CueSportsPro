@@ -1,6 +1,6 @@
-import React from "react";
-import { Link } from 'react-router-dom';
+import React from 'react';
 import axios from 'axios'; // Import axios to make requests
+import { Link } from 'react-router-dom';
 
 const TournamentList = ({ tournaments, user }) => {
 
@@ -11,47 +11,54 @@ const TournamentList = ({ tournaments, user }) => {
             return;
         }
 
-        // Ensure withCredentials is set to true to send the session cookie
         axios.post(`http://localhost:5001/tournament/${tournamentId}/register`, { userId: user._id }, { withCredentials: true })
-            .then(response => {console.log(response.data.message); window.location.href="/";})
+            .then(response => { console.log(response.data.message); window.location.href="/"; })
             .catch(error => alert('Error registering for the tournament:' + error));
     };
 
-    const handleWithdraw = async (tournamentId) => {
+    // Function to handle starting the tournament (in-progress)
+    const handleStart = async (tournamentId) => {
         if (!user) {
-            alert('You must be signed in to withdraw.');
-            return;
-        }
-
-        axios.post(`http://localhost:5001/tournament/${tournamentId}/withdraw`, { userId: user._id }, { withCredentials: true })
-            .then(response => {console.log(response.data.message); window.location.href="/";})
-            .catch(error => alert('Error withdrawing from the tournament:' + error));
-    };
-
-    const handleOfficiate = async (tournamentId) => {
-        if (!user) {
-            alert('You must be signed in to officiate.');
+            alert('You must be signed in to start the tournament.');
             return;
         }
 
         if (user.role !== 'tournament-official') {
-            alert('You do not have permission to officiate a tournament.');
+            alert('You do not have permission to start the tournament.');
             return;
         }
 
         try {
-            const response = await axios.post(
-                `http://localhost:5001/tournament/${tournamentId}/officiate`,
-                { userId: user._id }, // Send userId of the logged-in user
-                { withCredentials: true }
-            );
-            alert(response.data.message); // Handle success
+            const response = await axios.post(`http://localhost:5001/tournament/${tournamentId}/start`, { userId: user._id }, { withCredentials: true });
+            alert(response.data.message);
+            window.location.reload(); // Refresh the page to reflect the status change
         } catch (error) {
-            alert('Error officiating for the tournament.');
+            alert('Error starting the tournament.');
             console.error(error);
         }
     };
 
+    // Function to handle completing the tournament
+    const handleComplete = async (tournamentId) => {
+        if (!user) {
+            alert('You must be signed in to complete the tournament.');
+            return;
+        }
+
+        if (user.role !== 'tournament-official') {
+            alert('You do not have permission to complete the tournament.');
+            return;
+        }
+
+        try {
+            const response = await axios.post(`http://localhost:5001/tournament/${tournamentId}/complete`, { userId: user._id }, { withCredentials: true });
+            alert(response.data.message);
+            window.location.reload(); // Refresh the page to reflect the status change
+        } catch (error) {
+            alert('Error completing the tournament.');
+            console.error(error);
+        }
+    };
 
     return (
         <div>
@@ -65,45 +72,53 @@ const TournamentList = ({ tournaments, user }) => {
                             <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
                             <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
                             <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
-                            <p className="text-sm text-gray-300">📜 Rules: {tournament.ruleset}</p>
                             <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 
-                            <div className="mt-4 flex flex-wrap gap-4">
-                                {/* TODO: need to refactor below statements so they cannot register for a tournament they are officiating */}
-                                {user && user.username ? (
-                                    <>
-                                        {console.log(user)}
-                                        {tournament.players.find(player => player._id === user._id) !== undefined ? (
-                                            <button
-                                                onClick={() => handleWithdraw(tournament._id)}
-                                                className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
-                                            >
-                                                Withdraw
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleRegister(tournament._id)}
-                                                className="w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
-                                                disabled={tournament.players.length >= 32}
-                                            >
-                                                {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
-                                            </button>
-                                        )}
+                            <div className="mt-4 flex space-x-4">
+                                {/* Register Button (Only visible to players, not tournament officials) */}
+                                {user && user.username && user.role !== 'tournament-official' && (
+                                    tournament.players.find(player => player._id === user._id) !== undefined ? (
+                                        <button
+                                            onClick={() => handleRegister(tournament._id)}
+                                            className="w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
+                                            disabled={tournament.players.length >= 32}
+                                        >
+                                            {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleRegister(tournament._id)}
+                                            className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                        >
+                                            Register
+                                        </button>
+                                    )
+                                )}
 
-                                        {user.role === "tournament-official" && !tournament.tournamentOfficial && (
-                                            <button
-                                                onClick={() => handleOfficiate(tournament._id)}
-                                                className="w-full sm:w-auto bg-green-500 text-black py-2 px-4 rounded-lg hover:bg-green-400 transition"
-                                            >
-                                                Officiate
-                                            </button>
-                                        )}
-                                    </>
-                                ) : null}
+                                {/* Only show "Start Tournament" if the tournament is open */}
+                                {user && user.role === 'tournament-official' && tournament.status === 'open' && (
+                                    <button
+                                        onClick={() => handleStart(tournament._id)}
+                                        className="w-full sm:w-auto bg-green-500 text-black py-2 px-4 rounded-lg hover:bg-green-400 transition"
+                                    >
+                                        Start Tournament
+                                    </button>
+                                )}
 
-                                <Link to={`/tournament/${tournament._id}/bracket`} className="w-full sm:w-auto bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition text-center">
-                                    View Bracket
+                                {/* Only show "Complete Tournament" if the tournament is in-progress */}
+                                {user && user.role === 'tournament-official' && tournament.status === 'in-progress' && (
+                                    <button
+                                        onClick={() => handleComplete(tournament._id)}
+                                        className="w-full sm:w-auto bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 transition"
+                                    >
+                                        Complete Tournament
+                                    </button>
+                                )}
+
+                                {/* "View Players" button for tournaments that are open or in-progress */}
+                                <Link to={`/tournament/${tournament._id}/players`} className="w-full sm:w-auto bg-yellow-500 text-black py-2 px-4 rounded-lg hover:bg-yellow-400 transition">
+                                    View Players
                                 </Link>
                             </div>
                         </div>

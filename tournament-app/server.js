@@ -49,17 +49,18 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 // Tournament Schema
+// Tournament Schema
 const tournamentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: Date, required: true },
-    time: { type: String, required: true},
+    time: { type: String, required: true },
     ruleset: { type: String, required: true },
     format: { type: String, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
-    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Initially empty
-    tournamentOfficial: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null } // New field
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    tournamentOfficial: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    bracket: { type: Array, default: [] } // New field to persist the bracket
 });
-
 
 
 const Tournament = mongoose.model('Tournament', tournamentSchema);
@@ -279,32 +280,159 @@ app.get('/past-tournaments', async (req, res) => {
     }
 });
 
-// Fetch bracket data for a specific tournament
-// Backend - Get the bracket for a specific tournament
-app.get('/tournament/:id/bracket', async (req, res) => {
-    const tournamentId = req.params.id; // Extract tournament id from URL
+// Helper function to generate a bracket given an array of players
+const generateBracket = (players) => {
+    const n = players.length;
+    // Determine the next power of 2 greater than or equal to n
+    let totalSlots = 1;
+    while (totalSlots < n) {
+        totalSlots *= 2;
+    }
+    // Fill the first round with players followed by nulls (byes)
+    let roundPlayers = [...players];
+    while (roundPlayers.length < totalSlots) {
+        roundPlayers.push(null);
+    }
+    const rounds = [];
+    // Generate rounds until one match remains
+    while (roundPlayers.length > 1) {
+        const round = [];
+        for (let i = 0; i < roundPlayers.length; i += 2) {
+            round.push({
+                player1: roundPlayers[i],
+                player2: roundPlayers[i + 1],
+                winner: null
+            });
+        }
+        rounds.push(round);
+        // For the next round, we create placeholders (winners will be set later)
+        roundPlayers = new Array(round.length).fill(null);
+    }
+    return rounds;
+};
+
+// Set Tournament Status to "In-Progress"
+app.post('/tournament/:id/start', async (req, res) => {
+    const tournamentId = req.params.id;
+
+    // Ensure the user is authenticated and is a tournament official
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to start the tournament.' });
+    }
+    if (req.user.role !== 'tournament-official') {
+        return res.status(403).json({ message: 'You do not have permission to start the tournament.' });
+    }
 
     try {
-        if (!tournamentId) {
-            return res.status(400).json({ message: 'Tournament ID is missing' });
-        }
+        const tournament = await Tournament.findById(tournamentId);
 
-        // Ensure the tournament ID is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(tournamentId)) {
-            return res.status(400).json({ message: 'Invalid tournament ID' });
-        }
-
-        const tournament = await Tournament.findById(tournamentId).populate('players');
         if (!tournament) {
             return res.status(404).json({ message: 'Tournament not found' });
         }
 
-        res.json(tournament);
+        // Check if the tournament is already in progress
+        if (tournament.status === 'in-progress') {
+            return res.status(400).json({ message: 'Tournament is already in progress.' });
+        }
+
+        // Generate the bracket if the tournament status is "open"
+        const bracket = generateBracket(tournament.players); // You may need to use the existing generateBracket function
+        tournament.bracket = bracket;
+        tournament.status = 'in-progress'; // Set the status to in-progress
+
+        await tournament.save();
+        res.status(200).json({ message: 'Tournament has started and bracket has been generated!' });
+    } catch (error) {
+        console.error('Error starting tournament:', error);
+        res.status(500).json({ message: 'Error starting tournament', error });
+    }
+});
+
+// Set Tournament Status to "Completed"
+app.post('/tournament/:id/complete', async (req, res) => {
+    const tournamentId = req.params.id;
+
+    // Ensure the user is authenticated and is a tournament official
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to complete the tournament.' });
+    }
+    if (req.user.role !== 'tournament-official') {
+        return res.status(403).json({ message: 'You do not have permission to complete the tournament.' });
+    }
+
+    try {
+        const tournament = await Tournament.findById(tournamentId);
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        // If the tournament is not in progress, it cannot be marked as completed
+        if (tournament.status !== 'in-progress') {
+            return res.status(400).json({ message: 'Tournament is not in progress.' });
+        }
+
+        tournament.status = 'completed'; // Set the status to completed
+        await tournament.save();
+
+        res.status(200).json({ message: 'Tournament is now completed!' });
+    } catch (error) {
+        console.error('Error completing tournament:', error);
+        res.status(500).json({ message: 'Error completing tournament', error });
+    }
+});
+
+
+// Fetch bracket data for a specific tournament
+// Backend - Get the bracket for a specific tournament
+app.get('/tournament/:id/bracket', async (req, res) => {
+    const tournamentId = req.params.id;
+    try {
+        if (!tournamentId) {
+            return res.status(400).json({ message: 'Tournament ID is missing' });
+        }
+        if (!mongoose.Types.ObjectId.isValid(tournamentId)) {
+            return res.status(400).json({ message: 'Invalid tournament ID' });
+        }
+
+        // Fetch tournament with populated player1 and player2 in the bracket
+        const tournament = await Tournament.findById(tournamentId)
+            .populate('players') // Populate the players array with full user details
+            .populate('bracket.player1') // Populate player1 in the bracket
+            .populate('bracket.player2') // Populate player2 in the bracket
+            .populate('tournamentOfficial'); // Ensure the official is populated
+
+        console.log('Fetched Tournament:', tournament); // Debug statement to check the tournament data
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        // If the tournament hasn't begun, send the players list; otherwise, send the bracket
+        if (tournament.status === 'open') {
+            console.log('Returning Players:', tournament.players); // Debug statement for players list
+            res.json({
+                name: tournament.name,
+                status: tournament.status,
+                players: tournament.players
+            });
+        } else {
+            console.log('Returning Bracket:', tournament.bracket); // Debug statement for bracket
+            res.json({
+                name: tournament.name,
+                status: tournament.status,
+                bracket: tournament.bracket
+            });
+        }
     } catch (error) {
         console.error('Error fetching bracket:', error);
         res.status(500).json({ message: 'Error fetching bracket', error });
     }
 });
+
+
+
+
 
 // Register a player for a specific match in the tournament
 // Player registration route
@@ -394,6 +522,37 @@ const sendEmailToPlayers = async (tournamentName) => {
     }
 };
 
+// Endpoint to begin a tournament (generate and persist the bracket)
+app.post('/tournament/:id/begin', async (req, res) => {
+    const tournamentId = req.params.id;
+
+    // Verify user is authenticated and is a tournament official
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'You must be signed in to begin the tournament.' });
+    }
+    if (req.user.role !== 'tournament_official') {
+        return res.status(403).json({ message: 'You do not have permission to begin the tournament.' });
+    }
+    try {
+        // Populate players for proper bracket generation
+        const tournament = await Tournament.findById(tournamentId).populate('players');
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+        if (tournament.status !== 'open') {
+            return res.status(400).json({ message: 'Tournament has already begun.' });
+        }
+        // Generate and persist the bracket
+        const bracket = generateBracket(tournament.players);
+        tournament.bracket = bracket;
+        tournament.status = 'in-progress';
+        await tournament.save();
+        res.status(200).json({ message: 'Tournament has begun and bracket generated.', bracket });
+    } catch (error) {
+        console.error('Error beginning tournament:', error);
+        res.status(500).json({ message: 'Error beginning tournament', error });
+    }
+});
 
 // ✅ Root Route
 app.get('/', (req, res) => {
@@ -404,6 +563,17 @@ app.get('/test-user', async (req, res) => {
     const test = await User.findOne({username:"Devin Mihaichuk"})
     res.json(test);
 });
+
+// Fetch In-Progress Tournaments
+app.get('/tournaments/in-progress', async (req, res) => {
+    try {
+        const tournaments = await Tournament.find({ status: 'in-progress' }).populate('players');
+        res.json(tournaments);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching in-progress tournaments', error });
+    }
+});
+
 
 app.get('/member/:id', async (req, res) => {
     const memberId = req.params.id;
