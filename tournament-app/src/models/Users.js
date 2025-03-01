@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String }, // Optional if using Google OAuth
-    role: { type: String, enum: ['player', 'admin'], default: 'player' },
+    role: { type: String, enum: ['player', 'admin', 'tournament-official'], default: 'player' },
     wins: { type: Number, default: 0 },
     losses: { type: Number, default: 0 },
 

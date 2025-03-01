@@ -5,14 +5,16 @@
     justify-content: space-around;
     width: 100%;
     overflow-x: auto;
-    padding: 20px 0;
+    padding: 10px 0;
+    margin: 0 auto;
 }
 
 .round {
     display: flex;
     flex-direction: column;
     min-width: 200px;
-    margin: 0 10px;
+    margin: 0;
+    position: relative;
 }
 
 .round-title {
@@ -27,6 +29,8 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    justify-content: space-around;
+    height: 100%;
 }
 
 .match {
@@ -42,35 +46,68 @@
     min-height: 120px;
 }
 
-/* Add connecting lines between matches */
-.match::before,
+/* Match positioning for first round - more closely spaced */
+.round:nth-child(1) .matches {
+    padding: 0;
+}
+
+.round:nth-child(1) .match {
+    margin: 10px 0;
+}
+
+/* Match positioning for second round - positioned to align with connecting matches */
+.round:nth-child(2) .matches {
+    padding: 30px 0;
+}
+
+.round:nth-child(2) .match:nth-child(1) {
+    margin-top: 15px;
+    margin-bottom: 60px;
+}
+
+.round:nth-child(2) .match:nth-child(2) {
+    margin-top: 60px;
+    margin-bottom: 15px;
+}
+
+/* Match positioning for final round - centered */
+.round:nth-child(3) .matches {
+    padding: 90px 0;
+}
+
+.round:nth-child(3) .match {
+    margin: 0;
+}
+
+/* Original connecting lines */
 .match::after {
     content: '';
     position: absolute;
-    background-color: #4a5568;
-}
-
-/* Horizontal lines connecting to next round */
-.match::after {
     width: 20px;
     height: 2px;
-    top: 50%;
+    background-color: #4a5568;
     right: -20px;
+    top: 50%;
 }
 
-/* Vertical lines connecting matches in the same round */
 .round:not(:last-child) .match:nth-child(odd)::before {
+    content: '';
+    position: absolute;
     width: 2px;
-    height: calc(50% + 10px);
-    top: 50%;
+    height: 50%;
+    background-color: #4a5568;
     right: -20px;
+    top: 50%;
 }
 
 .round:not(:last-child) .match:nth-child(even)::before {
+    content: '';
+    position: absolute;
     width: 2px;
-    height: calc(50% + 10px);
-    bottom: 50%;
+    height: 50%;
+    background-color: #4a5568;
     right: -20px;
+    bottom: 50%;
 }
 
 /* Hide lines for the final match */
