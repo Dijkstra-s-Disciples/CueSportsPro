@@ -264,9 +264,61 @@ const transporter = nodemailer.createTransport({
 
 app.get('/past-tournaments', async (req, res) => {
     try {
-        const tournaments = await Tournament.find({status: "closed"}).populate('players');
-        res.json(tournaments);
+        const tournaments = await Tournament.find({status: "completed"})
+            .populate('players')
+            .populate('tournamentOfficial');
+        
+        // For each tournament, we need to populate the bracket data
+        const populatedTournaments = await Promise.all(tournaments.map(async (tournament) => {
+            const tournamentObj = tournament.toObject();
+            
+            if (tournamentObj.bracket && tournamentObj.bracket.length > 0) {
+                // Get all user IDs from the bracket to fetch them in one query
+                const userIds = new Set();
+                tournamentObj.bracket.forEach(round => {
+                    round.forEach(match => {
+                        if (match.player1) userIds.add(match.player1.toString());
+                        if (match.player2) userIds.add(match.player2.toString());
+                        if (match.winner) userIds.add(match.winner.toString());
+                    });
+                });
+                
+                // Fetch all users in one query
+                const users = await User.find({ _id: { $in: Array.from(userIds) } });
+                const usersMap = {};
+                users.forEach(user => {
+                    usersMap[user._id.toString()] = user;
+                });
+                
+                // Populate the bracket with user data
+                const populatedBracket = [];
+                tournamentObj.bracket.forEach(round => {
+                    const populatedRound = round.map(match => {
+                        const populatedMatch = { ...match };
+                        
+                        if (match.player1 && usersMap[match.player1.toString()]) {
+                            populatedMatch.player1 = usersMap[match.player1.toString()];
+                        }
+                        
+                        if (match.player2 && usersMap[match.player2.toString()]) {
+                            populatedMatch.player2 = usersMap[match.player2.toString()];
+                        }
+                        
+                        return populatedMatch;
+                    });
+                    
+                    populatedBracket.push(populatedRound);
+                });
+                
+                tournamentObj.bracket = populatedBracket;
+            }
+            
+            return tournamentObj;
+        }));
+        
+        res.json(populatedTournaments);
     } catch (error) {
+        console.error('Error fetching past tournaments:', error);
         res.status(500).json({ message: 'Error fetching tournaments', error });
     }
 });
@@ -386,33 +438,88 @@ app.get('/tournament/:id/bracket', async (req, res) => {
             return res.status(400).json({ message: 'Invalid tournament ID' });
         }
 
-        // Fetch tournament with populated player1 and player2 in the bracket
+        // Fetch tournament with populated player data
         const tournament = await Tournament.findById(tournamentId)
-            .populate('players') // Populate the players array with full user details
-            .populate('bracket.player1') // Populate player1 in the bracket
-            .populate('bracket.player2') // Populate player2 in the bracket
-            .populate('tournamentOfficial'); // Ensure the official is populated
-
-        console.log('Fetched Tournament:', tournament); // Debug statement to check the tournament data
+            .populate('players')
+            .populate('tournamentOfficial');
 
         if (!tournament) {
             return res.status(404).json({ message: 'Tournament not found' });
         }
 
-        // If the tournament hasn't begun, send the players list; otherwise, send the bracket
+        // Debug: Log the raw bracket data
+        console.log('Raw bracket data from DB:', JSON.stringify(tournament.bracket, null, 2));
+
+        // If the tournament hasn't begun, send the players list
         if (tournament.status === 'open') {
-            console.log('Returning Players:', tournament.players); // Debug statement for players list
             res.json({
                 name: tournament.name,
                 status: tournament.status,
                 players: tournament.players
             });
         } else {
-            console.log('Returning Bracket:', tournament.bracket); // Debug statement for bracket
+            // For in-progress or completed tournaments, we need to populate player data in the bracket
+            // Deep populate player1 and player2 in each match of each round
+            const populatedBracket = [];
+            
+            // Get all user IDs from the bracket to fetch them in one query
+            const userIds = new Set();
+            tournament.bracket.forEach(round => {
+                round.forEach(match => {
+                    if (match.player1) userIds.add(match.player1.toString());
+                    if (match.player2) userIds.add(match.player2.toString());
+                    if (match.winner) userIds.add(match.winner.toString());
+                });
+            });
+            
+            console.log('User IDs collected from bracket:', Array.from(userIds));
+            
+            // Fetch all users in one query
+            const users = await User.find({ _id: { $in: Array.from(userIds) } });
+            const usersMap = {};
+            users.forEach(user => {
+                usersMap[user._id.toString()] = user;
+            });
+            
+            // Populate the bracket with user data
+            tournament.bracket.forEach((round, roundIdx) => {
+                const populatedRound = round.map((match, matchIdx) => {
+                    const populatedMatch = { ...match.toObject ? match.toObject() : match };
+                    
+                    // Ensure player1 is properly populated
+                    if (match.player1) {
+                        const player1Id = match.player1.toString();
+                        if (usersMap[player1Id]) {
+                            populatedMatch.player1 = usersMap[player1Id];
+                        }
+                    }
+                    
+                    // Ensure player2 is properly populated
+                    if (match.player2) {
+                        const player2Id = match.player2.toString();
+                        if (usersMap[player2Id]) {
+                            populatedMatch.player2 = usersMap[player2Id];
+                        }
+                    }
+                    
+                    // Ensure winner ID is preserved
+                    if (match.winner) {
+                        populatedMatch.winner = match.winner.toString();
+                    }
+                    
+                    return populatedMatch;
+                });
+                
+                populatedBracket.push(populatedRound);
+            });
+            
+            // Debug: Log the populated bracket
+            console.log('Populated bracket (first round):', JSON.stringify(populatedBracket[0], null, 2));
+            
             res.json({
                 name: tournament.name,
                 status: tournament.status,
-                bracket: tournament.bracket
+                bracket: populatedBracket
             });
         }
     } catch (error) {
@@ -521,7 +628,7 @@ app.post('/tournament/:id/begin', async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).json({ message: 'You must be signed in to begin the tournament.' });
     }
-    if (req.user.role !== 'tournament_official') {
+    if (req.user.role !== 'tournament-official') {
         return res.status(403).json({ message: 'You do not have permission to begin the tournament.' });
     }
     try {
@@ -609,7 +716,238 @@ app.put('/member/:id', async (req, res) => {
     }
 });
 
+// Update match winner and advance player in bracket
+app.post('/tournament/:id/update-match', async (req, res) => {
+    const tournamentId = req.params.id;
+    const { roundIndex, matchIndex, winnerId } = req.body;
 
+    console.log('Update match request received:', {
+        tournamentId,
+        roundIndex,
+        matchIndex,
+        winnerId
+    });
+
+    // Ensure the user is authenticated and is a tournament official
+    if (!req.isAuthenticated()) {
+        console.log('Authentication failed for update-match');
+        return res.status(401).json({ message: 'You must be signed in to update match results.' });
+    }
+    
+    if (req.user.role !== 'tournament-official') {
+        console.log('Permission denied: User role is', req.user.role);
+        return res.status(403).json({ message: 'You do not have permission to update match results.' });
+    }
+
+    try {
+        const tournament = await Tournament.findById(tournamentId);
+
+        if (!tournament) {
+            console.log('Tournament not found:', tournamentId);
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        console.log('Tournament status:', tournament.status);
+        if (tournament.status !== 'in-progress') {
+            return res.status(400).json({ message: 'Tournament is not in progress.' });
+        }
+
+        // Update the winner for the specified match
+        if (!tournament.bracket[roundIndex] || !tournament.bracket[roundIndex][matchIndex]) {
+            console.log('Invalid round or match index:', { roundIndex, matchIndex, bracketLength: tournament.bracket.length });
+            return res.status(400).json({ message: 'Invalid round or match index.' });
+        }
+
+        // Get the current match
+        const currentMatch = tournament.bracket[roundIndex][matchIndex];
+        console.log('Current match data:', JSON.stringify(currentMatch, null, 2));
+        
+        // Helper function to safely convert any ID to string
+        const safeToString = (id) => {
+            if (!id) return null;
+            try {
+                // Handle different possible formats of the ID
+                if (typeof id === 'string') return id;
+                if (id._id) return id._id.toString();
+                if (id.toString) return id.toString();
+                return String(id);
+            } catch (err) {
+                console.error('Error converting ID to string:', err);
+                return null;
+            }
+        };
+        
+        // Verify the winner is one of the players in the match
+        const player1Id = safeToString(currentMatch.player1);
+        const player2Id = safeToString(currentMatch.player2);
+        const winnerIdStr = safeToString(winnerId);
+        
+        console.log('Player IDs for comparison:', { player1Id, player2Id, winnerId: winnerIdStr });
+        
+        if (winnerIdStr !== player1Id && winnerIdStr !== player2Id) {
+            console.log('Winner ID mismatch:', { winnerId: winnerIdStr, player1Id, player2Id });
+            return res.status(400).json({ 
+                message: 'Selected winner is not a player in this match.',
+                winnerId: winnerIdStr,
+                player1Id,
+                player2Id
+            });
+        }
+
+        // Always set the winner for the current match
+        tournament.bracket[roundIndex][matchIndex].winner = new mongoose.Types.ObjectId(winnerId);
+        console.log(`Setting winner for match [${roundIndex}][${matchIndex}] to:`, winnerId);
+
+        // Check if this is the final match
+        const isFinalMatch = roundIndex === tournament.bracket.length - 1 && matchIndex === 0;
+        console.log(`Is this the final match? ${isFinalMatch}`);
+
+        // Advance the winner to the next round if not the final round
+        if (!isFinalMatch && roundIndex < tournament.bracket.length - 1) {
+            const nextRoundIndex = roundIndex + 1;
+            const nextMatchIndex = Math.floor(matchIndex / 2);
+
+            // Determine if this player should be placed as player1 or player2 in the next match
+            const isPlayer1 = matchIndex % 2 === 0;
+
+            // Place the winner in the appropriate position in the next round
+            if (isPlayer1) {
+                // Make sure we're setting the ID, not the object
+                tournament.bracket[nextRoundIndex][nextMatchIndex].player1 = new mongoose.Types.ObjectId(winnerId);
+                console.log(`Advancing winner to next round as player1 [${nextRoundIndex}][${nextMatchIndex}]`);
+            } else {
+                // Make sure we're setting the ID, not the object
+                tournament.bracket[nextRoundIndex][nextMatchIndex].player2 = new mongoose.Types.ObjectId(winnerId);
+                console.log(`Advancing winner to next round as player2 [${nextRoundIndex}][${nextMatchIndex}]`);
+            }
+        }
+
+        // Check if all matches in the final round have winners
+        let tournamentCompleted = false;
+        if (roundIndex === tournament.bracket.length - 1) {
+            // This is the final round - check if all matches have winners
+            tournamentCompleted = true;
+            console.log('Final round match updated, checking if tournament is completed');
+        } else {
+            // Check if this was the last match needed to complete the tournament
+            const finalRound = tournament.bracket[tournament.bracket.length - 1];
+            tournamentCompleted = finalRound.every(match => match.winner);
+            console.log(`Checking final round matches. Tournament completed: ${tournamentCompleted}`);
+        }
+
+        // If tournament is completed, update status and player stats
+        if (tournamentCompleted) {
+            tournament.status = 'completed';
+            console.log('Tournament is now completed');
+            
+            // Get the final match winner
+            const finalRound = tournament.bracket[tournament.bracket.length - 1];
+            const finalMatch = finalRound[0];
+            const finalWinnerId = finalMatch.winner ? finalMatch.winner.toString() : null;
+            
+            if (finalWinnerId) {
+                // Update the winner's stats
+                const winner = await User.findById(finalWinnerId);
+                if (winner) {
+                    winner.wins = (winner.wins || 0) + 1;
+                    await winner.save();
+                    console.log(`Updated winner stats for ${winner.username}, wins: ${winner.wins}`);
+                }
+                
+                // Find the loser of the final match
+                const finalPlayer1Id = safeToString(finalMatch.player1);
+                const finalPlayer2Id = safeToString(finalMatch.player2);
+                const finalLoserId = finalWinnerId === finalPlayer1Id ? finalPlayer2Id : finalPlayer1Id;
+                
+                if (finalLoserId) {
+                    const loser = await User.findById(finalLoserId);
+                    if (loser) {
+                        loser.losses = (loser.losses || 0) + 1;
+                        await loser.save();
+                        console.log(`Updated loser stats for ${loser.username}, losses: ${loser.losses}`);
+                    }
+                }
+            }
+        }
+
+        // Use markModified to ensure Mongoose knows the bracket has been updated
+        tournament.markModified('bracket');
+        
+        // Save the tournament with updated bracket
+        await tournament.save();
+        console.log('Tournament saved with updated bracket');
+
+        // Verify the save was successful by re-fetching the tournament
+        const verifyTournament = await Tournament.findById(tournamentId);
+        console.log(`Verification - Winner for match [${roundIndex}][${matchIndex}]:`, 
+            verifyTournament.bracket[roundIndex][matchIndex].winner);
+
+        // Fetch all user IDs from the bracket to populate the response
+        const userIds = new Set();
+        tournament.bracket.forEach(round => {
+            round.forEach(match => {
+                if (match.player1) userIds.add(match.player1.toString());
+                if (match.player2) userIds.add(match.player2.toString());
+                if (match.winner) userIds.add(match.winner.toString());
+            });
+        });
+        
+        // Fetch all users in one query
+        const users = await User.find({ _id: { $in: Array.from(userIds) } });
+        const usersMap = {};
+        users.forEach(user => {
+            usersMap[user._id.toString()] = user;
+        });
+        
+        // Populate the bracket with user data for the response
+        const populatedBracket = [];
+        tournament.bracket.forEach((round, roundIdx) => {
+            const populatedRound = round.map((match, matchIdx) => {
+                const populatedMatch = { ...match.toObject ? match.toObject() : match };
+                
+                // Ensure player1 is properly populated
+                if (match.player1) {
+                    const player1Id = match.player1.toString();
+                    if (usersMap[player1Id]) {
+                        populatedMatch.player1 = usersMap[player1Id];
+                    }
+                }
+                
+                // Ensure player2 is properly populated
+                if (match.player2) {
+                    const player2Id = match.player2.toString();
+                    if (usersMap[player2Id]) {
+                        populatedMatch.player2 = usersMap[player2Id];
+                    }
+                }
+                
+                // Ensure winner ID is preserved
+                if (match.winner) {
+                    populatedMatch.winner = match.winner.toString();
+                }
+                
+                return populatedMatch;
+            });
+            
+            populatedBracket.push(populatedRound);
+        });
+
+        res.status(200).json({ 
+            message: 'Match updated successfully!',
+            bracket: populatedBracket,
+            status: tournament.status
+        });
+    } catch (error) {
+        console.error('Error updating match:', error);
+        // Provide more detailed error information
+        const errorDetails = {
+            message: 'Error updating match',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        };
+        res.status(500).json(errorDetails);
+    }
+});
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5001;
