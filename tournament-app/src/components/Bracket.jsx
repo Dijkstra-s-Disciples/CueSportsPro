@@ -134,6 +134,11 @@ const Bracket = () => {
         }
     };
 
+    const getBracketSizeClass = (bracket) => {
+        // Just return an empty string for now to avoid any issues
+        return '';
+    };
+
     if (error) {
         return (
             <div className="text-center bg-gray-900 p-8 rounded-lg shadow-xl">
@@ -173,7 +178,7 @@ const Bracket = () => {
         );
     }
 
-    // If tournament is completed, show a message
+    // If tournament is completed, show the winner and the bracket
     if (tournament.status === 'completed') {
         // Find the winner (the winner of the last match in the last round)
         const lastRound = tournament.bracket[tournament.bracket.length - 1];
@@ -194,10 +199,60 @@ const Bracket = () => {
                         {winnerPlayer ? winnerPlayer.username : "Unknown"}
                     </p>
                 </div>
-                <p className="text-white text-center">This tournament has been moved to past tournaments.</p>
-                <div className="text-center mt-4">
+                
+                {/* Display the bracket for completed tournament */}
+                <div className={`tournament-bracket ${getBracketSizeClass(tournament.bracket)}`}>
+                    {tournament.bracket.map((round, roundIndex) => (
+                        <div key={roundIndex} className="round">
+                            <h3 className="round-title">
+                                {roundIndex === tournament.bracket.length - 1 
+                                    ? "Final" 
+                                    : roundIndex === tournament.bracket.length - 2 
+                                        ? "Semi-Finals" 
+                                        : `Round ${roundIndex + 1}`}
+                            </h3>
+                            <div className="matches">
+                                {round.map((match, matchIndex) => (
+                                    <div 
+                                        key={matchIndex} 
+                                        className={`match ${match.winner ? 'match-complete' : 'match-pending'}`}
+                                    >
+                                        <div className="match-players">
+                                            <div 
+                                                className={`player ${match.player1 && match.winner && 
+                                                    isSameId(match.winner, match.player1._id) ? 'winner' : ''}`}
+                                            >
+                                                {match.player1 ? match.player1.username : "TBD"}
+                                            </div>
+                                            <div className="vs">vs</div>
+                                            <div 
+                                                className={`player ${match.player2 && match.winner && 
+                                                    isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
+                                            >
+                                                {match.player2 ? match.player2.username : "TBD"}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* If winner is selected, show who won */}
+                                        {match.winner && (
+                                            <div className="winner-display">
+                                                Winner: {match.player1 && isSameId(match.winner, match.player1._id)
+                                                    ? match.player1.username 
+                                                    : match.player2 && isSameId(match.winner, match.player2._id)
+                                                    ? match.player2.username
+                                                    : "Unknown"}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                
+                <div className="text-center mt-8">
                     <Link to="/past-tournaments" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        View Past Tournaments
+                        Back to Past Tournaments
                     </Link>
                 </div>
             </div>
@@ -227,7 +282,7 @@ const Bracket = () => {
                 </div>
             )}
             
-            <div className="tournament-bracket">
+            <div className={`tournament-bracket ${getBracketSizeClass(tournament.bracket)}`}>
                 {tournament.bracket.map((round, roundIndex) => (
                     <div key={roundIndex} className="round">
                         <h3 className="round-title">
