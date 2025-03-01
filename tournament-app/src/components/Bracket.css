@@ -1,0 +1,224 @@
+/* Tournament Bracket Styling */
+.tournament-bracket {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.round {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    margin: 0 10px;
+}
+
+.round-title {
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.matches {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.match {
+    background-color: #2d3748;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #4a5568;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+}
+
+/* Add connecting lines between matches */
+.match::before,
+.match::after {
+    content: '';
+    position: absolute;
+    background-color: #4a5568;
+}
+
+/* Horizontal lines connecting to next round */
+.match::after {
+    width: 20px;
+    height: 2px;
+    top: 50%;
+    right: -20px;
+}
+
+/* Vertical lines connecting matches in the same round */
+.round:not(:last-child) .match:nth-child(odd)::before {
+    width: 2px;
+    height: calc(50% + 10px);
+    top: 50%;
+    right: -20px;
+}
+
+.round:not(:last-child) .match:nth-child(even)::before {
+    width: 2px;
+    height: calc(50% + 10px);
+    bottom: 50%;
+    right: -20px;
+}
+
+/* Hide lines for the final match */
+.round:last-child .match::after,
+.round:last-child .match::before {
+    display: none;
+}
+
+.match-players {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.player {
+    padding: 8px;
+    color: white;
+    border-radius: 4px;
+    margin: 2px 0;
+    background-color: #1a202c;
+}
+
+.vs {
+    text-align: center;
+    color: #a0aec0;
+    margin: 4px 0;
+    font-size: 0.8rem;
+}
+
+.winner {
+    background-color: #2c5282;
+    font-weight: bold;
+    border-left: 3px solid #4299e1;
+}
+
+.winner-select {
+    width: 100%;
+    padding: 8px;
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: auto;
+}
+
+.winner-select:disabled {
+    background-color: #2c5282;
+    cursor: not-allowed;
+}
+
+.winner-display {
+    margin-top: auto;
+    padding: 8px;
+    background-color: #2c5282;
+    color: white;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.match-complete {
+    border-color: #2c5282;
+}
+
+.match-pending {
+    border-color: #4a5568;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tournament-bracket {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .round {
+        width: 90%;
+        margin: 10px 0;
+    }
+    
+    .match::before,
+    .match::after {
+        display: none;
+    }
+}
+
+/* Winner announcement styling */
+.winner-announcement {
+    background: linear-gradient(135deg, #f6e05e 0%, #d69e2e 100%);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(246, 224, 94, 0.3);
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 10px rgba(246, 224, 94, 0.3);
+    }
+    to {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(246, 224, 94, 0.6);
+    }
+}
+
+/* Tournament completion notification */
+.tournament-completion-notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.notification-content {
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(44, 82, 130, 0.5);
+    animation: slideIn 0.5s ease-out, glow 2s infinite alternate;
+}
+
+.notification-content h3 {
+    color: #f6e05e;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.notification-content p {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+} 
