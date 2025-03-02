@@ -115,7 +115,7 @@ const App = () => {
                     <Routes>
                         <Route path="/signin" element={<SignIn />} />
                         {user && user.role !== 'player' && (
-                            <Route path="/create-tournament" element={<TournamentCreationForm />} />
+                            <Route path="/create-tournament" element={<TournamentCreationForm official={user}/>} />
                         )}
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />

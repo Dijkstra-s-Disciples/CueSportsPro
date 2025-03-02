@@ -1,15 +1,20 @@
-import React from 'react'
+import React, {useState} from 'react'
 import axios from "axios";
 
-const TournamentCreationForm = () => {
+const TournamentCreationForm = ({ official }) => {
+    const [tournament, setTournament] = useState()
+
     const formRef = React.useRef(null);
     const submitNewTournament = (event) => {
         event.preventDefault();
         const formData = new FormData(formRef.current);
         axios.post('http://localhost:5001/tournaments', {name: formData.get("name"), date: formData.get("date"), time: formData.get("time"), ruleset: formData.get("rule-set"), format: formData.get("format")})
-            .then((response) => {console.log(response.data); window.location.href="/";})
+            .then((response) => {
+                axios.post(`http://localhost:5001/tournament/${response.data.tournament._id}/officiate`, {userId: official._id}, { withCredentials: true })
+                    .then(() => {window.location.href="/"})
+                    .catch((error) => console.log('Error officiating new tournament:', error));
+            })
             .catch((error) => console.log('Error posting new tournament:', error));
-        //formRef.current.reset();
     }
 
     return (

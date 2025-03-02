@@ -10,8 +10,6 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import User from './src/models/Users.js'; //
 
-
-
 dotenv.config();
 
 const app = express();
@@ -49,7 +47,7 @@ const tournamentSchema = new mongoose.Schema({
     format: { type: String, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    tournamentOfficial: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    officials: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     bracket: { type: Array, default: [] } // New field to persist the bracket
 });
 
@@ -157,6 +155,8 @@ app.post('/tournament/:id/officiate', async (req, res) => {
     const tournamentId = req.params.id;
     const { userId } = req.body;
 
+    console.log(req.user);
+
     // Check if the user is authenticated and has the 'tournament-official' role
     if (!req.isAuthenticated()) {
         return res.status(401).json({ message: 'You must be signed in to officiate.' });
@@ -174,13 +174,16 @@ app.post('/tournament/:id/officiate', async (req, res) => {
             return res.status(404).json({ message: 'Tournament not found' });
         }
 
-        // If the tournament already has an official, prevent assigning a new one
-        if (tournament.tournamentOfficial) {
-            return res.status(400).json({ message: 'This tournament already has an official.' });
+        if (tournament.officials.includes(userId)) {
+            return res.status(400).json({ message: 'You are already officiating this tournament.' });
         }
 
-        // Assign the tournament official
-        tournament.tournamentOfficial = userId;
+        if (tournament.players.includes(userId)) {
+            return res.status(400).json({ message: 'You cannot officiate a tournament you are participating in.' });
+        }
+
+        // Add the player to the tournament's players array
+        tournament.officials.push(userId);
         await tournament.save();
 
         res.status(200).json({ message: 'Tournament official assigned successfully!' });
@@ -189,7 +192,6 @@ app.post('/tournament/:id/officiate', async (req, res) => {
         res.status(500).json({ message: 'Error officiating the tournament', error });
     }
 });
-
 
 // ✅ Player List Endpoint
 app.get('/players', async (req, res) => {
@@ -266,7 +268,7 @@ app.get('/past-tournaments', async (req, res) => {
     try {
         const tournaments = await Tournament.find({status: "completed"})
             .populate('players')
-            .populate('tournamentOfficial');
+            .populate('officials');
         
         // For each tournament, we need to populate the bracket data
         const populatedTournaments = await Promise.all(tournaments.map(async (tournament) => {
@@ -441,7 +443,7 @@ app.get('/tournament/:id/bracket', async (req, res) => {
         // Fetch tournament with populated player data
         const tournament = await Tournament.findById(tournamentId)
             .populate('players')
-            .populate('tournamentOfficial');
+            .populate('officials');
 
         if (!tournament) {
             return res.status(404).json({ message: 'Tournament not found' });
@@ -528,10 +530,6 @@ app.get('/tournament/:id/bracket', async (req, res) => {
     }
 });
 
-
-
-
-
 // Register a player for a specific match in the tournament
 // Player registration route
 app.post('/tournament/:id/register', async (req, res) => {
@@ -556,6 +554,10 @@ app.post('/tournament/:id/register', async (req, res) => {
 
         if (tournament.players.includes(userId)) {
             return res.status(400).json({ message: 'You are already registered for this tournament.' });
+        }
+
+        if (tournament.officials.includes(userId)) {
+            return res.status(400).json({ message: 'You cannot register for a tournament you are already officiating.' });
         }
 
         // Add the player to the tournament's players array
@@ -585,12 +587,18 @@ app.post('/tournament/:id/withdraw', async (req, res) => {
             return res.status(404).json({ message: 'Tournament not found' });
         }
 
-        if (tournament.players.find(player => player._id.toString() === userId.toString()) === undefined) {
-            return res.status(400).json({ message: 'You are not already registered for this tournament.' });
+        if (tournament.players.find(player => player._id.toString() === userId.toString()) === undefined &&
+            tournament.officials.find(official => official._id.toString() === userId.toString()) === undefined) {
+            return res.status(400).json({ message: 'You are not already registered or officiating for this tournament.' });
         }
-        tournament.players = tournament.players.filter(player => player._id.toString() !== userId.toString());
-        await tournament.save();
+        if (tournament.players.find(player => player._id.toString() === userId.toString()) !== undefined) {
+            tournament.players = tournament.players.filter(player => player._id.toString() !== userId.toString());
+        }
+        if (tournament.officials.find(official => official._id.toString() === userId.toString()) !== undefined) {
+            tournament.officials = tournament.officials.filter(official => official._id.toString() !== userId.toString());
+        }
 
+        await tournament.save();
         res.status(200).json({ message: 'Successfully withdrawn from the tournament!' });
     } catch (error) {
         console.error('Error withdrawing from tournament:', error);
