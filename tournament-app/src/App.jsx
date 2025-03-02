@@ -126,7 +126,7 @@ const App = () => {
                         <Route path="/settings/:userID" element={<Settings />} />
                         <Route path="/change-profile" element={<h2 className="text-center text-2xl">Change Profile Page</h2>} />
                         <Route path="/now-in-session" element={<InSession />} /> {/* New Route */}
-                        <Route path="/tournament/:id/players" element={<TournamentPlayers />} /> {/* View Players Route */}
+                        <Route path="/tournament/:id/players" element={<TournamentPlayers user={user} />} /> {/* View Players Route */}
                     </Routes>
                 </div>
 
