@@ -57,6 +57,7 @@ const TournamentPlayers = ({user}) => {
                             <div key={player._id}>
                                 <li className="py-2">
                                     {player.username}
+                                    {/*Need to edit later for only officials for that tournament (edit bracket in server)*/}
                                     {user.role === 'tournament-official' ? (<button className="ml-4 w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition" onClick={()=>removePlayer(player._id)}>Reject Player</button>) : null}
                                 </li>
                             </div>
