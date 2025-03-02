@@ -96,7 +96,7 @@ const App = () => {
                         <Route path="/tournament/:id/bracket" element={<Bracket />} />
                         <Route path="/profile/:userID" element={<DisplayProfile />} />
                         <Route path="/now-in-session" element={<InSession />} /> {/* New Route */}
-                        <Route path="/tournament/:id/players" element={<TournamentPlayers />} /> {/* View Players Route */}
+                        <Route path="/tournament/:id/players" element={<TournamentPlayers user={user} />} /> {/* View Players Route */}
                     </Routes>
                 </div>
 
