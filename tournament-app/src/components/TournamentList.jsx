@@ -89,7 +89,7 @@ const TournamentList = ({ tournaments, user }) => {
 
     return (
         <div>
-            <h2 className="text-3xl font-bold text-center mb-6">🏆 Upcoming Tournaments</h2>
+            <h2 className="text-3xl font-bold text-center mb-6">Upcoming Tournaments</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tournaments.length === 0 ? (
                     <p className="text-center">No tournaments available.</p>
@@ -100,6 +100,7 @@ const TournamentList = ({ tournaments, user }) => {
                             <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
                             <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
                             <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
+                            <p className="text-sm text-gray-300">🥇 First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}</p>
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 
                             <div className="mt-4 flex space-x-4">
@@ -111,7 +112,7 @@ const TournamentList = ({ tournaments, user }) => {
                                                 onClick={() => handleWithdraw(tournament._id)}
                                                 className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
                                             >
-                                                Withdraw
+                                                {tournament.players.some(player => player._id === user._id) ? "Withdraw" : "Unofficiate"}
                                             </button>
                                         ) : user.role === 'tournament-official' ? (
                                             <>

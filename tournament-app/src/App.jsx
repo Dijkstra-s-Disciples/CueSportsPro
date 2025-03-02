@@ -101,12 +101,12 @@ const App = () => {
 
                 {/* Navigation Bar */}
                 <nav className="flex justify-center space-x-6 bg-green-800 p-4 text-lg font-semibold">
-                    <Link to="/" className="hover:text-gold-400 transition">🏆 Home</Link>
+                    <Link to="/" className="hover:text-gold-400 transition">🏠 Home</Link>
                     {user && user.role !== 'player' && (
                         <Link to="/create-tournament" className="hover:text-gold-400 transition">➕ Create Tournament</Link>
                     )}
                     <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
-                    <Link to="/past-tournaments" className="hover:text-gold-400 transition">Past Tournaments</Link>
+                    <Link to="/past-tournaments" className="hover:text-gold-400 transition">🏆 Past Tournaments</Link>
                     <Link to="/now-in-session" className="hover:text-gold-400 transition">🏁 Now In Session</Link> {/* New Link */}
                 </nav>
 

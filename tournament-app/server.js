@@ -45,6 +45,7 @@ const tournamentSchema = new mongoose.Schema({
     time: { type: String, required: true },
     ruleset: { type: String, required: true },
     format: { type: String, required: true },
+    scoring: { type: Number, required: true },
     status: { type: String, enum: ['open', 'in-progress', 'completed'], default: 'open' },
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     officials: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
@@ -224,20 +225,42 @@ app.post('/login', passport.authenticate('local', { failureRedirect: '/login' })
 // ✅ Create a Tournament
 app.post('/tournaments', async (req, res) => {
     console.log("Received POST request:", req.body);
-    const { name, date, time, ruleset, format } = req.body;
+    const { name, date, time, ruleset, format, scoring, levels } = req.body;
 
-    if (!name || !date || !time || !ruleset || !format) {
+    if (!name || !date || !time || !ruleset || !format || !scoring) {
         return res.status(400).json({ message: "Missing required fields" });
     }
 
     try {
-        const newTournament = new Tournament({ name, date, time, ruleset, format });
-        await newTournament.save();
+        let newTournaments = []
+
+        if (levels.length === 0) {
+            newTournaments.push(new Tournament(
+                {name: name,
+                    date: date,
+                    time: time,
+                    ruleset: ruleset,
+                    format: format,
+                    scoring: scoring}));
+            await newTournaments[newTournaments.length - 1].save();
+        }
+        else {
+            for (let i = 0; i < levels.length; i++) {
+                newTournaments.push(new Tournament(
+                    {name: `${name} for ${levels[i]}`,
+                        date: date,
+                        time: time,
+                        ruleset: ruleset,
+                        format: format,
+                        scoring: scoring}))
+                await newTournaments[newTournaments.length - 1].save();
+            }
+        }
 
         // Send email to all players after tournament creation
         await sendEmailToPlayers(name); // Pass the tournament name
 
-        res.status(201).json({ message: 'Tournament created successfully', tournament: newTournament });
+        res.status(201).json({ message: 'Tournament created successfully', tournaments: newTournaments });
 
     } catch (error) {
         console.error("Error creating tournament:", error);
