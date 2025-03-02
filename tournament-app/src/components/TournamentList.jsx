@@ -16,6 +16,17 @@ const TournamentList = ({ tournaments, user }) => {
             .catch(error => alert('Error registering for the tournament:' + error));
     };
 
+    const handleWithdraw = async (tournamentId) => {
+        if (!user) {
+            alert('You must be signed in to withdraw.');
+            return;
+        }
+
+        axios.post(`http://localhost:5001/tournament/${tournamentId}/withdraw`, { userId: user._id }, { withCredentials: true })
+            .then(response => { console.log(response.data.message); window.location.href="/"; })
+            .catch(error => alert('Error withdrawing from the tournament:' + error));
+    }
+
     // Function to handle starting the tournament (in-progress)
     const handleStart = async (tournamentId) => {
         if (!user) {
@@ -80,18 +91,18 @@ const TournamentList = ({ tournaments, user }) => {
                                 {user && user.username && user.role !== 'tournament-official' && (
                                     tournament.players.find(player => player._id === user._id) !== undefined ? (
                                         <button
-                                            onClick={() => handleRegister(tournament._id)}
-                                            className="w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
-                                            disabled={tournament.players.length >= 32}
+                                            onClick={() => handleWithdraw(tournament._id)}
+                                            className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
                                         >
-                                            {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                            Withdraw
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleRegister(tournament._id)}
                                             className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                            disabled={tournament.players.length >= 32}
                                         >
-                                            Register
+                                            {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
                                         </button>
                                     )
                                 )}
