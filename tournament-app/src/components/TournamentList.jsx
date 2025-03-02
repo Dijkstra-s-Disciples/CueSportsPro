@@ -27,6 +27,22 @@ const TournamentList = ({ tournaments, user }) => {
             .catch(error => alert('Error withdrawing from the tournament:' + error));
     }
 
+    const handleOfficiate = async (tournamentId) => {
+        if (!user) {
+            alert('You must be signed in to withdraw.');
+            return;
+        }
+
+        if (user.role !== 'tournament-official') {
+            alert('You must be a tournament official to officiate a tournament');
+            return;
+        }
+
+        axios.post(`http://localhost:5001/tournament/${tournamentId}/officiate`, {userId: user._id }, { withCredentials: true })
+            .then(response => { console.log(response.data.message); window.location.href="/"; })
+            .catch(error => alert('Error officiating the tournament:' + error));
+    }
+
     // Function to handle starting the tournament (in-progress)
     const handleStart = async (tournamentId) => {
         if (!user) {
@@ -88,27 +104,45 @@ const TournamentList = ({ tournaments, user }) => {
 
                             <div className="mt-4 flex space-x-4">
                                 {/* Register Button (Only visible to players, not tournament officials) */}
-                                {user && user.username && user.role !== 'tournament-official' && (
-                                    tournament.players.find(player => player._id === user._id) !== undefined ? (
-                                        <button
-                                            onClick={() => handleWithdraw(tournament._id)}
-                                            className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
-                                        >
-                                            Withdraw
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleRegister(tournament._id)}
-                                            className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
-                                            disabled={tournament.players.length >= 32}
-                                        >
-                                            {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
-                                        </button>
-                                    )
+                                {user && user.username && (
+                                    <>
+                                        {(tournament.players.some(player => player._id === user._id) || tournament.officials.some(official => official === user._id)) ? (
+                                            <button
+                                                onClick={() => handleWithdraw(tournament._id)}
+                                                className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
+                                            >
+                                                Withdraw
+                                            </button>
+                                        ) : user.role === 'tournament-official' ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleRegister(tournament._id)}
+                                                    className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                                    disabled={tournament.players.length >= 32}
+                                                >
+                                                    {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOfficiate(tournament._id)}
+                                                    className="w-full sm:w-auto bg-purple-500 text-black py-2 px-4 rounded-lg hover:bg-purple-400 transition"
+                                                >
+                                                    Officiate
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleRegister(tournament._id)}
+                                                className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                                disabled={tournament.players.length >= 32}
+                                            >
+                                                {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                            </button>
+                                        )}
+                                    </>
                                 )}
 
                                 {/* Only show "Start Tournament" if the tournament is open */}
-                                {user && user.role === 'tournament-official' && tournament.status === 'open' && (
+                                {user && user.username && tournament.officials.some(official => official === user._id) && tournament.status === 'open' && (
                                     <button
                                         onClick={() => handleStart(tournament._id)}
                                         className="w-full sm:w-auto bg-green-500 text-black py-2 px-4 rounded-lg hover:bg-green-400 transition"
@@ -118,7 +152,7 @@ const TournamentList = ({ tournaments, user }) => {
                                 )}
 
                                 {/* Only show "Complete Tournament" if the tournament is in-progress */}
-                                {user && user.role === 'tournament-official' && tournament.status === 'in-progress' && (
+                                {user && user.username && tournament.officials.some(official => official === user._id) && tournament.status === 'in-progress' && (
                                     <button
                                         onClick={() => handleComplete(tournament._id)}
                                         className="w-full sm:w-auto bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 transition"
