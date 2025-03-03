@@ -273,4 +273,61 @@ table tr:hover td {
   background-color: rgba(16, 185, 129, 0.2);
   border: 1px solid rgba(16, 185, 129, 0.4);
   color: #d1fae5;
+}
+
+/* Home page parallax background */
+.home-parallax-bg {
+    background-image: url('/6d4fd995-b825-4e78-aa72-55d6d043bf9f.jpeg');
+    background-attachment: fixed;
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.home-parallax-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: inherit;
+    background-attachment: fixed;
+    background-position: top center;
+    filter: blur(8px);
+    z-index: -1;
+}
+
+.home-parallax-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to bottom, 
+                rgba(6, 78, 59, 0.7) 0%,
+                rgba(6, 78, 59, 0.8) 80%, 
+                rgba(17, 24, 39, 1) 100%); /* Gradient that fades to footer color */
+    z-index: -1;
+}
+
+/* Special styling for cards on the home page with parallax */
+.home-parallax-bg .tournament-card {
+    background-color: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+.home-parallax-bg .tournament-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    background-color: rgba(17, 24, 39, 0.95);
+}
+
+.home-parallax-bg h1, 
+.home-parallax-bg h2 {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 } 

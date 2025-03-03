@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import PlayersList from './components/PlayersList';
 import TournamentList from "./components/TournamentList.jsx";
 import TournamentCreationForm from "./components/TournamentCreationForm.jsx";
@@ -16,10 +16,13 @@ import DevPanel from './components/DevPanel';
 import NotFound from './components/NotFound';
 import './styles/modern.css';
 
-const App = () => {
+// Wrapper component that applies the correct background based on route
+const AppContent = () => {
     const [tournaments, setTournaments] = useState([]);
     const [user, setUser] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const location = useLocation();
+    const isHomePage = location.pathname === '/';
 
     useEffect(() => {
         axios.get('http://localhost:5001/user', { withCredentials: true })
@@ -46,8 +49,8 @@ const App = () => {
     };
 
     return (
-        <Router>
-            <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 text-white">
+        <>
+            <div className={`min-h-screen ${isHomePage ? 'home-parallax-bg' : 'bg-gradient-to-b from-emerald-900 to-emerald-800'} text-white`}>
                 <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center">
                     <h1 className="text-4xl font-bold text-white">
                         <span className="text-emerald-400">🎱 Cue</span>Sports<span className="text-emerald-400">Pro</span>
@@ -118,7 +121,7 @@ const App = () => {
                     </div>
                 </nav>
 
-                <div className="container mx-auto p-6">
+                <div className="container mx-auto p-6 mb-auto">
                     <Routes>
                         <Route path="/signin" element={<SignIn />} />
                         {user && user.role !== 'player' && (
@@ -141,16 +144,25 @@ const App = () => {
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
-
-                <footer className="bg-gray-900 text-center p-6 text-sm">
-                    <div className="container mx-auto">
-                        <p className="text-gray-400">© 2025 CueSportsPro | Developed for Tournament Enthusiasts</p>
-                        <div className="mt-2 flex justify-center space-x-4">
-                            <span className="text-emerald-400 text-2xl">🎱</span>
-                        </div>
-                    </div>
-                </footer>
             </div>
+            
+            <footer className="bg-gray-900 text-center p-6 text-sm relative z-10">
+                <div className="container mx-auto">
+                    <p className="text-gray-400">© 2025 CueSportsPro | Developed for Tournament Enthusiasts</p>
+                    <div className="mt-2 flex justify-center space-x-4">
+                        <span className="text-emerald-400 text-2xl">🎱</span>
+                    </div>
+                </div>
+            </footer>
+        </>
+    );
+};
+
+// Main App component
+const App = () => {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 };
