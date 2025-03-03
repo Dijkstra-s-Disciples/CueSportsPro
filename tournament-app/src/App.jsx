@@ -14,6 +14,7 @@ import InSession from './components/InSession';
 import TournamentPlayers from './components/TournamentPlayers';
 import DevPanel from './components/DevPanel';
 import NotFound from './components/NotFound';
+import './styles/modern.css';
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -46,47 +47,75 @@ const App = () => {
 
     return (
         <Router>
-            <div className="min-h-screen bg-green-900 text-white">
-                <header className="bg-black py-6 flex justify-between items-center px-6">
-                    <h1 className="text-4xl font-bold text-gold-500">
-                        🎱 Cue Sports Club Tournament Management
+            <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 text-white">
+                <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center">
+                    <h1 className="text-4xl font-bold text-white">
+                        <span className="text-emerald-400">🎱 Cue</span>Sports<span className="text-emerald-400">Pro</span>
                     </h1>
                     {user && user.username ? (
                         <div className="relative">
                             <button
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                                className="text-lg flex items-center space-x-2 focus:outline-none"
+                                className="bg-gray-800 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
-                                👤 {user.username} ⬇
+                                <span className="text-emerald-400">👤</span> 
+                                <span>{user.username}</span>
+                                <span className="ml-1">▼</span>
                             </button>
                             {dropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-                                    <Link to={`/profile/${user._id}`} className="block px-4 py-2 hover:bg-gray-700 transition">📝 View Profile</Link>
-                                    <Link to={`/EditProfile/${user._id}`} className="block px-4 py-2 hover:bg-gray-700 transition">✏️ Edit Profile</Link>
-                                    <Link to={`/settings/${user._id}`} className="block px-4 py-2 hover:bg-gray-700 transition">⚙️ Settings</Link>
+                                <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50">
+                                    <Link to={`/profile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                        <span className="mr-2">📝</span> View Profile
+                                    </Link>
+                                    <Link to={`/EditProfile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                        <span className="mr-2">✏️</span> Edit Profile
+                                    </Link>
+                                    <Link to={`/settings/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                        <span className="mr-2">⚙️</span> Settings
+                                    </Link>
                                     {user.role === 'admin' && (
-                                        <Link to="/dev-panel" className="block px-4 py-2 hover:bg-gray-700 transition">🛠 Dev Panel</Link>
+                                        <Link to="/dev-panel" className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                            <span className="mr-2">🛠</span> Dev Panel
+                                        </Link>
                                     )}
-                                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-500 hover:bg-gray-700 transition">🚪 Sign Out</button>
+                                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-400 hover:bg-gray-700 transition flex items-center">
+                                        <span className="mr-2">🚪</span> Sign Out
+                                    </button>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <Link to="/signin" className="text-lg hover:text-gold-400 transition">🔐 Sign In</Link>
+                        <Link to="/signin" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-full transition-all duration-200 shadow-md">
+                            🔐 Sign In
+                        </Link>
                     )}
                 </header>
 
-                <nav className="flex justify-center space-x-6 bg-green-800 p-4 text-lg font-semibold">
-                    <Link to="/" className="hover:text-gold-400 transition">🏠 Home</Link>
-                    {user && user.role !== 'player' && (
-                        <Link to="/create-tournament" className="hover:text-gold-400 transition">➕ Create Tournament</Link>
-                    )}
-                    <Link to="/players" className="hover:text-gold-400 transition">🎮 Players</Link>
-                    <Link to="/past-tournaments" className="hover:text-gold-400 transition">Past Tournaments</Link>
-                    <Link to="/now-in-session" className="hover:text-gold-400 transition">🏁 Now In Session</Link>
-                    {user && user.role === 'admin' && (
-                        <Link to="/dev-panel" className="hover:text-gold-400 transition">🛠 Dev Tab</Link>
-                    )}
+                <nav className="bg-gray-800 shadow-md">
+                    <div className="container mx-auto flex flex-wrap justify-center space-x-1 md:space-x-4 p-3 text-base font-medium">
+                        <Link to="/" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                            <span className="mr-2">🏠</span> Home
+                        </Link>
+                        {user && user.role !== 'player' && (
+                            <Link to="/create-tournament" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                                <span className="mr-2">➕</span> Create Tournament
+                            </Link>
+                        )}
+                        <Link to="/players" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                            <span className="mr-2">🎮</span> Players
+                        </Link>
+                        <Link to="/past-tournaments" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                            <span className="mr-2">🏆</span> Past Tournaments
+                        </Link>
+                        <Link to="/now-in-session" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                            <span className="mr-2">🏁</span> Now In Session
+                        </Link>
+                        {user && user.role === 'admin' && (
+                            <Link to="/dev-panel" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
+                                <span className="mr-2">🛠</span> Dev Tab
+                            </Link>
+                        )}
+                    </div>
                 </nav>
 
                 <div className="container mx-auto p-6">
@@ -113,8 +142,13 @@ const App = () => {
                     </Routes>
                 </div>
 
-                <footer className="bg-black text-center p-4 text-sm">
-                    © 2025 Cue Sports Club | Developed for Tournament Enthusiasts 🎱
+                <footer className="bg-gray-900 text-center p-6 text-sm">
+                    <div className="container mx-auto">
+                        <p className="text-gray-400">© 2025 CueSportsPro | Developed for Tournament Enthusiasts</p>
+                        <div className="mt-2 flex justify-center space-x-4">
+                            <span className="text-emerald-400 text-2xl">🎱</span>
+                        </div>
+                    </div>
                 </footer>
             </div>
         </Router>
