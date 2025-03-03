@@ -29,7 +29,7 @@ const TournamentCreationForm = ({ official }) => {
 
     return (
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg mx-auto">
-                <h2 className="text-2xl font-bold text-center mb-4 text-gold-400">➕ Create New Tournament</h2>
+                <h2 className="text-3xl font-bold text-center mb-4 text-white-400">Create New Tournament</h2>
                 <form className="space-y-4" ref={formRef} onSubmit={(event) => submitNewTournament(event)}>
                     <input
                         type="text"
