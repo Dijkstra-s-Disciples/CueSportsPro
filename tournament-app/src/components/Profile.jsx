@@ -70,8 +70,26 @@ const DisplayProfile = () => {
                             <p>Unknown</p>
                         )}
                     </div>
-
                     <p>Bio: {user.bio}</p>
+                    {user.matchHistory.map((match, index) => (
+                        <tr key={index} className="bg-gray-100 text-center">
+                            <td className="border border-gray-500 px-4 py-2">
+                                <a href={`/profile/${match.opponent}`} className="text-blue-500 hover:underline">
+                                    {match.opponent}
+                                </a>
+                            </td>
+                            <td className="border border-gray-500 px-4 py-2">
+                                <a href={`/tournament/${match.tournament}`} className="text-blue-500 hover:underline">
+                                    {match.tournament}
+                                </a>
+                            </td>
+                            <td className={`border border-gray-500 px-4 py-2 ${match.result === 'win' ? 'text-green-500' : 'text-red-500'}`}>
+                                {match.result.toUpperCase()}
+                            </td>
+                            <td className="border border-gray-500 px-4 py-2">{match.score}</td>
+                            <td className="border border-gray-500 px-4 py-2">{new Date(match.date).toLocaleDateString()}</td>
+                        </tr>
+                    ))}
                 </div>
             </div>
         </div>

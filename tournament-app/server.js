@@ -190,6 +190,16 @@ app.post('/tournament/:id/officiate', async (req, res) => {
     }
 });
 
+app.get('/tournaments', async (req, res) => {
+    try {
+        const tournaments = await Tournament.find({});
+        res.json(tournaments);
+    } catch (error) {
+        console.error("Error fetching tournaments:", error);
+        res.status(500).json({ message: "Error fetching tournaments", error });
+    }
+});
+
 
 // ✅ Player List Endpoint
 app.get('/players', async (req, res) => {
@@ -200,6 +210,17 @@ app.get('/players', async (req, res) => {
         res.status(500).json({ message: 'Error fetching players', error });
     }
 });
+
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find({}); // Fetch all users with all fields
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching users', error });
+    }
+});
+
+
 
 // ✅ Register a User
 app.post('/register', async (req, res) => {
@@ -716,16 +737,43 @@ app.put('/member/:id', async (req, res) => {
     }
 });
 
+app.put('/users/update-all', async (req, res) => {
+    try {
+        const { users } = req.body;
+
+        if (!Array.isArray(users)) {
+            return res.status(400).json({ message: "Invalid data format. Expected an array of users." });
+        }
+
+        const updatePromises = users.map(user => {
+            return User.findByIdAndUpdate(
+                user._id,
+                { $set: user }, // Ensures missing fields are added
+                { new: true, upsert: false, runValidators: true } // Keeps existing users and validates data
+            );
+        });
+
+        const updatedUsers = await Promise.all(updatePromises);
+
+        res.json({ message: "All users updated successfully", updatedUsers });
+    } catch (error) {
+        console.error("Error updating users:", error);
+        res.status(500).json({ message: "Error updating users", error });
+    }
+});
+
 // Update match winner and advance player in bracket
 app.post('/tournament/:id/update-match', async (req, res) => {
     const tournamentId = req.params.id;
-    const { roundIndex, matchIndex, winnerId } = req.body;
+    const { roundIndex, matchIndex, winnerId, score1, score2 } = req.body;
 
     console.log('Update match request received:', {
         tournamentId,
         roundIndex,
         matchIndex,
-        winnerId
+        winnerId,
+        score1,  // 🆕 Added logging for scores
+        score2
     });
 
     // Ensure the user is authenticated and is a tournament official
@@ -733,7 +781,7 @@ app.post('/tournament/:id/update-match', async (req, res) => {
         console.log('Authentication failed for update-match');
         return res.status(401).json({ message: 'You must be signed in to update match results.' });
     }
-    
+
     if (req.user.role !== 'tournament-official') {
         console.log('Permission denied: User role is', req.user.role);
         return res.status(403).json({ message: 'You do not have permission to update match results.' });
@@ -761,7 +809,7 @@ app.post('/tournament/:id/update-match', async (req, res) => {
         // Get the current match
         const currentMatch = tournament.bracket[roundIndex][matchIndex];
         console.log('Current match data:', JSON.stringify(currentMatch, null, 2));
-        
+
         // Helper function to safely convert any ID to string
         const safeToString = (id) => {
             if (!id) return null;
@@ -776,22 +824,53 @@ app.post('/tournament/:id/update-match', async (req, res) => {
                 return null;
             }
         };
-        
+
         // Verify the winner is one of the players in the match
         const player1Id = safeToString(currentMatch.player1);
         const player2Id = safeToString(currentMatch.player2);
         const winnerIdStr = safeToString(winnerId);
-        
+
         console.log('Player IDs for comparison:', { player1Id, player2Id, winnerId: winnerIdStr });
-        
+
         if (winnerIdStr !== player1Id && winnerIdStr !== player2Id) {
             console.log('Winner ID mismatch:', { winnerId: winnerIdStr, player1Id, player2Id });
-            return res.status(400).json({ 
+            return res.status(400).json({
                 message: 'Selected winner is not a player in this match.',
                 winnerId: winnerIdStr,
                 player1Id,
                 player2Id
             });
+        }
+        // Determine the loser 🆕
+        const loserId = winnerIdStr === player1Id ? player2Id : player1Id;
+
+        // 🆕 Update match history for both players
+        const winner = await User.findById(winnerIdStr);
+        if (winner) {
+            winner.wins += 1;
+            winner.matchHistory.push({   // 🆕 Added match logging
+                opponent: loserId,
+                tournament: tournamentId,
+                result: 'win',
+                score: `${score1} - ${score2}`,
+                date: new Date()
+            });
+            await winner.save();
+            console.log(`✅ Updated match history for winner: ${winner.username}`);
+        }
+
+        const loser = await User.findById(loserId);
+        if (loser) {
+            loser.losses += 1;
+            loser.matchHistory.push({   // 🆕 Added match logging
+                opponent: winnerIdStr,
+                tournament: tournamentId,
+                result: 'loss',
+                score: `${score1} - ${score2}`,
+                date: new Date()
+            });
+            await loser.save();
+            console.log(`✅ Updated match history for loser: ${loser.username}`);
         }
 
         // Always set the winner for the current match
@@ -839,12 +918,12 @@ app.post('/tournament/:id/update-match', async (req, res) => {
         if (tournamentCompleted) {
             tournament.status = 'completed';
             console.log('Tournament is now completed');
-            
+
             // Get the final match winner
             const finalRound = tournament.bracket[tournament.bracket.length - 1];
             const finalMatch = finalRound[0];
             const finalWinnerId = finalMatch.winner ? finalMatch.winner.toString() : null;
-            
+
             if (finalWinnerId) {
                 // Update the winner's stats
                 const winner = await User.findById(finalWinnerId);
@@ -853,12 +932,12 @@ app.post('/tournament/:id/update-match', async (req, res) => {
                     await winner.save();
                     console.log(`Updated winner stats for ${winner.username}, wins: ${winner.wins}`);
                 }
-                
+
                 // Find the loser of the final match
                 const finalPlayer1Id = safeToString(finalMatch.player1);
                 const finalPlayer2Id = safeToString(finalMatch.player2);
                 const finalLoserId = finalWinnerId === finalPlayer1Id ? finalPlayer2Id : finalPlayer1Id;
-                
+
                 if (finalLoserId) {
                     const loser = await User.findById(finalLoserId);
                     if (loser) {
@@ -872,14 +951,14 @@ app.post('/tournament/:id/update-match', async (req, res) => {
 
         // Use markModified to ensure Mongoose knows the bracket has been updated
         tournament.markModified('bracket');
-        
+
         // Save the tournament with updated bracket
         await tournament.save();
         console.log('Tournament saved with updated bracket');
 
         // Verify the save was successful by re-fetching the tournament
         const verifyTournament = await Tournament.findById(tournamentId);
-        console.log(`Verification - Winner for match [${roundIndex}][${matchIndex}]:`, 
+        console.log(`Verification - Winner for match [${roundIndex}][${matchIndex}]:`,
             verifyTournament.bracket[roundIndex][matchIndex].winner);
 
         // Fetch all user IDs from the bracket to populate the response
@@ -891,20 +970,20 @@ app.post('/tournament/:id/update-match', async (req, res) => {
                 if (match.winner) userIds.add(match.winner.toString());
             });
         });
-        
+
         // Fetch all users in one query
         const users = await User.find({ _id: { $in: Array.from(userIds) } });
         const usersMap = {};
         users.forEach(user => {
             usersMap[user._id.toString()] = user;
         });
-        
+
         // Populate the bracket with user data for the response
         const populatedBracket = [];
         tournament.bracket.forEach((round, roundIdx) => {
             const populatedRound = round.map((match, matchIdx) => {
                 const populatedMatch = { ...match.toObject ? match.toObject() : match };
-                
+
                 // Ensure player1 is properly populated
                 if (match.player1) {
                     const player1Id = match.player1.toString();
@@ -912,7 +991,7 @@ app.post('/tournament/:id/update-match', async (req, res) => {
                         populatedMatch.player1 = usersMap[player1Id];
                     }
                 }
-                
+
                 // Ensure player2 is properly populated
                 if (match.player2) {
                     const player2Id = match.player2.toString();
@@ -920,19 +999,19 @@ app.post('/tournament/:id/update-match', async (req, res) => {
                         populatedMatch.player2 = usersMap[player2Id];
                     }
                 }
-                
+
                 // Ensure winner ID is preserved
                 if (match.winner) {
                     populatedMatch.winner = match.winner.toString();
                 }
-                
+
                 return populatedMatch;
             });
-            
+
             populatedBracket.push(populatedRound);
         });
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Match updated successfully!',
             bracket: populatedBracket,
             status: tournament.status
