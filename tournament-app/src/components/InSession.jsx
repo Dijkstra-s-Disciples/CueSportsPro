@@ -31,8 +31,9 @@ const InSession = () => {
                         <div key={tournament._id} className="bg-gray-800 p-4 rounded-lg mb-6">
                             <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
                             <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
-                            <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
+                            {/*<p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>*/}
                             <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
+                            <p className="text-sm text-gray-300">🥇 First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}</p>
                             <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
 
                             <Link to={`/tournament/${tournament._id}/bracket`} className="text-blue-400 hover:underline">
