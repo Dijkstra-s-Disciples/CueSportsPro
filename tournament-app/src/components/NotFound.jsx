@@ -57,71 +57,83 @@ const NotFound = () => {
     }, [gameActive, timeLeft, score, highScore]);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-            <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-            <p className="text-xl mb-8">Oops! Looks like this page is scratched!</p>
-            
-            <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold mb-2">Cue Ball Chase</h2>
-                <p className="mb-4">Click the cue ball as many times as you can in 30 seconds!</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4">
+            <div className="card p-8 w-full max-w-2xl fade-in">
+                <div className="text-center mb-8">
+                    <h1 className="text-5xl font-bold text-emerald-400 mb-4">404</h1>
+                    <h2 className="text-2xl font-semibold mb-2">Page Not Found</h2>
+                    <p className="text-gray-300 mb-6">Oops! Looks like this page is scratched!</p>
+                </div>
                 
-                {!gameActive && (
-                    <button 
-                        onClick={startGame}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition mb-4"
-                    >
-                        {score > 0 ? 'Play Again' : 'Start Game'}
-                    </button>
-                )}
+                <div className="mb-8 text-center">
+                    <h2 className="text-2xl font-bold mb-3 text-emerald-400">Cue Ball Chase</h2>
+                    <p className="mb-4 text-gray-300">Click the cue ball as many times as you can in 30 seconds!</p>
+                    
+                    {!gameActive && (
+                        <button 
+                            onClick={startGame}
+                            className="btn-primary mt-2 mb-6"
+                        >
+                            {score > 0 ? 'Play Again' : 'Start Game'}
+                        </button>
+                    )}
+                    
+                    {gameActive && (
+                        <div className="flex justify-between w-full max-w-md mx-auto mb-3 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                            <div className="text-lg">Score: <span className="text-emerald-400 font-bold">{score}</span></div>
+                            <div className="text-lg">Time: <span className="text-amber-400 font-bold">{timeLeft}s</span></div>
+                        </div>
+                    )}
+                    
+                    {!gameActive && score > 0 && (
+                        <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                            <p className="text-lg">Your Score: <span className="text-emerald-400 font-bold">{score}</span></p>
+                            <p className="text-lg">High Score: <span className="text-amber-400 font-bold">{highScore}</span></p>
+                        </div>
+                    )}
+                </div>
                 
-                {gameActive && (
-                    <div className="flex justify-between w-full max-w-md mb-2">
-                        <div>Score: {score}</div>
-                        <div>Time: {timeLeft}s</div>
-                    </div>
-                )}
+                <div 
+                    ref={gameAreaRef}
+                    className="relative border-2 border-gray-700 bg-gray-800 bg-opacity-70 rounded-lg w-full h-64 mb-8 overflow-hidden"
+                    style={{
+                        boxShadow: '0 0 20px rgba(16, 185, 129, 0.1) inset',
+                    }}
+                >
+                    {gameActive && (
+                        <div 
+                            className="absolute w-12 h-12 bg-white rounded-full shadow-lg cursor-pointer transform hover:scale-110 transition-all duration-200"
+                            style={{ 
+                                left: `${position.x}px`, 
+                                top: `${position.y}px`,
+                                boxShadow: '0 0 15px rgba(255, 255, 255, 0.8)',
+                                background: 'radial-gradient(circle at 35% 35%, white 0%, #f0f0f0 60%, #e0e0e0 100%)'
+                            }}
+                            onClick={handleBallClick}
+                        />
+                    )}
+                    
+                    {!gameActive && !score && (
+                        <div className="flex items-center justify-center h-full text-gray-400">
+                            <p>Click Start Game to play!</p>
+                        </div>
+                    )}
+                    
+                    {!gameActive && score > 0 && (
+                        <div className="flex items-center justify-center h-full text-gray-300">
+                            <div className="text-center">
+                                <p className="text-xl mb-2">Game Over!</p>
+                                <p className="text-3xl text-emerald-400">You scored {score} points.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 
-                {!gameActive && score > 0 && (
-                    <div className="mb-4">
-                        <p>Your Score: {score}</p>
-                        <p>High Score: {highScore}</p>
-                    </div>
-                )}
-            </div>
-            
-            <div 
-                ref={gameAreaRef}
-                className="relative border-2 border-gray-700 bg-gray-800 rounded-lg w-full max-w-lg h-64 mb-8"
-            >
-                {gameActive && (
-                    <div 
-                        className="absolute w-12 h-12 bg-white rounded-full shadow-lg cursor-pointer transform hover:scale-110 transition"
-                        style={{ 
-                            left: `${position.x}px`, 
-                            top: `${position.y}px`,
-                            boxShadow: '0 0 10px rgba(255, 255, 255, 0.7)'
-                        }}
-                        onClick={handleBallClick}
-                    />
-                )}
-                
-                {!gameActive && !score && (
-                    <div className="flex items-center justify-center h-full">
-                        <p>Click Start Game to play!</p>
-                    </div>
-                )}
-                
-                {!gameActive && score > 0 && (
-                    <div className="flex items-center justify-center h-full">
-                        <p>Game Over! You scored {score} points.</p>
-                    </div>
-                )}
-            </div>
-            
-            <div className="flex space-x-4">
-                <Link to="/" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    Go Home
-                </Link>
+                <div className="text-center">
+                    <Link to="/" className="btn-primary inline-block">
+                        Go Home
+                    </Link>
+                </div>
             </div>
         </div>
     );
