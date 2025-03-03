@@ -13,6 +13,7 @@ import Settings from './components/Settings';
 import InSession from './components/InSession';
 import TournamentPlayers from './components/TournamentPlayers';
 import DevPanel from './components/DevPanel';
+import NotFound from './components/NotFound';
 
 const App = () => {
     const [tournaments, setTournaments] = useState([]);
@@ -106,6 +107,9 @@ const App = () => {
                         {user && user.role === 'admin' && (
                             <Route path="/dev-panel" element={<DevPanel />} />
                         )}
+                        
+                        {/* 404 - Catch All Route */}
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
 
