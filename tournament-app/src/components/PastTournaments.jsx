@@ -56,7 +56,7 @@ const PastTournaments = () => {
 
     return (
         <div className="bg-gray-900 p-8 rounded-lg shadow-xl">
-            <h2 className="text-3xl font-bold text-center text-white mb-8">🏆 Past Tournaments</h2>
+            <h2 className="text-3xl font-bold text-center text-white mb-8">Past Tournaments</h2>
             
             {tournaments.length === 0 ? (
                 <p className="text-center text-white">No past tournaments found.</p>
