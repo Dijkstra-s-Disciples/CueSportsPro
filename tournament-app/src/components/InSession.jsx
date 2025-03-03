@@ -22,7 +22,7 @@ const InSession = () => {
 
     return (
         <div className="in-session-container bg-gray-900 p-8 rounded-lg shadow-xl">
-            <h2 className="text-center text-2xl text-white font-bold mb-8">Now In Session</h2>
+            <h2 className="text-center text-3xl text-white font-bold mb-8">Now In Session</h2>
             {tournaments.length === 0 ? (
                 <p className="text-center text-white">No tournaments are currently in session.</p>
             ) : (
