@@ -88,84 +88,110 @@ const TournamentList = ({ tournaments, user }) => {
     };
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold text-center mb-6">Upcoming Tournaments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="fade-in">
+            <h2 className="text-3xl font-bold text-center mb-8 text-white">Upcoming Tournaments</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {tournaments.length === 0 ? (
-                    <p className="text-center">No tournaments available.</p>
+                    <p className="text-center text-gray-300 col-span-3">No tournaments available at this time.</p>
                 ) : (
                     tournaments.map((tournament) => (
-                        <div key={tournament._id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gold-500">
-                            <h3 className="text-xl font-semibold text-gold-400">{tournament.name}</h3>
-                            <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
-                            <p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>
-                            <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
-                            <p className="text-sm text-gray-300">🥇 First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}</p>
-                            <p className="text-sm text-gray-300">👥 Players: {tournament.players.length} / 32</p>
+                        <div key={tournament._id} className="card tournament-card p-6 slide-in-up">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-xl font-semibold text-white">{tournament.name}</h3>
+                                <span className={`badge ${tournament.status === 'open' ? 'badge-success' : 'badge-pending'}`}>
+                                    {tournament.status === 'open' ? 'Open' : 'In Progress'}
+                                </span>
+                            </div>
+                            
+                            <div className="space-y-2 mb-4">
+                                <p className="text-sm text-gray-300 flex items-center">
+                                    <span className="mr-2">📅</span> {new Date(tournament.date).toLocaleDateString()}
+                                </p>
+                                <p className="text-sm text-gray-300 flex items-center">
+                                    <span className="mr-2">🕰️</span> {tournament.time}
+                                </p>
+                                <p className="text-sm text-gray-300 flex items-center">
+                                    <span className="mr-2">🎯</span> {tournament.format}
+                                </p>
+                                <p className="text-sm text-gray-300 flex items-center">
+                                    <span className="mr-2">🥇</span> First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}
+                                </p>
+                                <p className="text-sm text-gray-300 flex items-center justify-between">
+                                    <span className="flex items-center">
+                                        <span className="mr-2">👥</span> Players
+                                    </span>
+                                    <span className="bg-gray-700 px-2 py-1 rounded-full text-xs">
+                                        {tournament.players.length} / 32
+                                    </span>
+                                </p>
+                            </div>
 
-                            <div className="mt-4 flex space-x-4">
-                                {/* Register Button (Only visible to players, not tournament officials) */}
+                            <div className="mt-6 space-y-3">
+                                {/* View Button for everyone */}
+                                <Link 
+                                    to={`/tournament/${tournament._id}/bracket`}
+                                    className="block text-center bg-gray-700 text-white py-2 px-4 rounded-full hover:bg-gray-600 transition-all duration-200"
+                                >
+                                    View Bracket
+                                </Link>
+                                
+                                {/* Buttons for signed-in users */}
                                 {user && user.username && (
-                                    <>
+                                    <div className="space-y-3">
                                         {(tournament.players.some(player => player._id === user._id) || tournament.officials.some(official => official === user._id)) ? (
                                             <button
                                                 onClick={() => handleWithdraw(tournament._id)}
-                                                className="w-full sm:w-auto bg-red-600 text-black py-2 px-4 rounded-lg hover:bg-red-500 transition"
+                                                className="w-full bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-500 transition-all duration-200"
                                             >
                                                 {tournament.players.some(player => player._id === user._id) ? "Withdraw" : "Unofficiate"}
                                             </button>
                                         ) : user.role === 'tournament-official' ? (
-                                            <>
+                                            <div className="space-y-3">
                                                 <button
                                                     onClick={() => handleRegister(tournament._id)}
-                                                    className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                                    className="w-full bg-emerald-600 text-white py-2 px-4 rounded-full hover:bg-emerald-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     disabled={tournament.players.length >= 32}
                                                 >
-                                                    {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
+                                                    {tournament.players.length >= 32 ? "Tournament Full" : "Register as Player"}
                                                 </button>
                                                 <button
                                                     onClick={() => handleOfficiate(tournament._id)}
-                                                    className="w-full sm:w-auto bg-purple-500 text-black py-2 px-4 rounded-lg hover:bg-purple-400 transition"
+                                                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-full hover:bg-indigo-500 transition-all duration-200"
                                                 >
-                                                    Officiate
+                                                    Officiate Tournament
                                                 </button>
-                                            </>
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleRegister(tournament._id)}
-                                                className="w-full sm:w-auto bg-blue-500 text-black py-2 px-4 rounded-lg hover:bg-blue-400 transition"
+                                                className="w-full bg-emerald-600 text-white py-2 px-4 rounded-full hover:bg-emerald-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 disabled={tournament.players.length >= 32}
                                             >
                                                 {tournament.players.length >= 32 ? "Tournament Full" : "Register"}
                                             </button>
                                         )}
-                                    </>
-                                )}
 
-                                {/* Only show "Start Tournament" if the tournament is open */}
-                                {user && user.username && tournament.officials.some(official => official === user._id) && tournament.status === 'open' && (
-                                    <button
-                                        onClick={() => handleStart(tournament._id)}
-                                        className="w-full sm:w-auto bg-green-500 text-black py-2 px-4 rounded-lg hover:bg-green-400 transition"
-                                    >
-                                        Start Tournament
-                                    </button>
-                                )}
+                                        {/* Admin controls */}
+                                        {user && user.role === 'tournament-official' && tournament.status === 'open' && (
+                                            <button
+                                                onClick={() => handleStart(tournament._id)}
+                                                className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"
+                                                disabled={tournament.players.length < 4}
+                                            >
+                                                {tournament.players.length < 4 ? "Need at least 4 players" : "Start Tournament"}
+                                            </button>
+                                        )}
 
-                                {/* Only show "Complete Tournament" if the tournament is in-progress */}
-                                {user && user.username && tournament.officials.some(official => official === user._id) && tournament.status === 'in-progress' && (
-                                    <button
-                                        onClick={() => handleComplete(tournament._id)}
-                                        className="w-full sm:w-auto bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 transition"
-                                    >
-                                        Complete Tournament
-                                    </button>
+                                        {user && user.role === 'tournament-official' && tournament.status === 'in-progress' && (
+                                            <button
+                                                onClick={() => handleComplete(tournament._id)}
+                                                className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"
+                                            >
+                                                Mark as Completed
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
-
-                                {/* "View Players" button for tournaments that are open or in-progress */}
-                                <Link to={`/tournament/${tournament._id}/players`} className="w-full sm:w-auto bg-yellow-500 text-black py-2 px-4 rounded-lg hover:bg-yellow-400 transition">
-                                    View Players
-                                </Link>
                             </div>
                         </div>
                     ))

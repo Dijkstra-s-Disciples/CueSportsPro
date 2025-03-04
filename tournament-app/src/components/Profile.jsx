@@ -116,6 +116,7 @@ const DisplayProfile = () => {
                     ))}
                     </tbody>
                 </table>
+
             </div>
         </div>
     );
