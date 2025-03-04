@@ -1,9 +1,7 @@
 # CueSportsPro Tournament Platform
 
-![CueSportsPro Logo](public/favicon.ico)
-
-## Live Demo
-[CueSportsPro on Glitch](https://your-glitch-link-here) - Coming Soon!
+## Live Website
+[CueSportsPro on Glitch](https://glitch-link-here) - Coming Soon!
 
 ## Overview
 CueSportsPro is an elegant and comprehensive platform designed for organizing and managing cue sports tournaments. Built with a focus on user experience and functionality, it serves pool players, tournament officials, and spectators with a seamless interface for tournament management.
@@ -60,4 +58,4 @@ CueSportsPro is designed to elevate the experience of cue sports tournaments, ma
 
 ---
 
-© 2023 CueSportsPro. All rights reserved.
+© 2025 CueSportsPro. All rights reserved.
