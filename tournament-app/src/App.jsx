@@ -76,7 +76,7 @@ const App = () => {
                 </header>
 
                 <nav className="flex justify-center space-x-6 bg-green-800 p-4 text-lg font-semibold">
-                    <Link to="/" className="hover:text-gold-400 transition">🏆 Home</Link>
+                    <Link to="/" className="hover:text-gold-400 transition">🏠 Home</Link>
                     {user && user.role !== 'player' && (
                         <Link to="/create-tournament" className="hover:text-gold-400 transition">➕ Create Tournament</Link>
                     )}
@@ -92,7 +92,7 @@ const App = () => {
                     <Routes>
                         <Route path="/signin" element={<SignIn />} />
                         {user && user.role !== 'player' && (
-                            <Route path="/create-tournament" element={<TournamentCreationForm />} />
+                            <Route path="/create-tournament" element={<TournamentCreationForm official={user}/>} />
                         )}
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />
@@ -102,7 +102,7 @@ const App = () => {
                         <Route path="/EditProfile/:userID" element={<EditProfile />} />
                         <Route path="/settings/:userID" element={<Settings />} />
                         <Route path="/now-in-session" element={<InSession />} />
-                        <Route path="/tournament/:id/players" element={<TournamentPlayers />} />
+                        <Route path="/tournament/:id/players" element={<TournamentPlayers user={user} />} />
                         {user && user.role === 'admin' && (
                             <Route path="/dev-panel" element={<DevPanel />} />
                         )}
