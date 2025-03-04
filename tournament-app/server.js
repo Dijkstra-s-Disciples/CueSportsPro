@@ -9,7 +9,6 @@ import session from 'express-session';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import User from './src/models/Users.js'; //
-
 dotenv.config();
 
 const app = express();
@@ -36,6 +35,74 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('✅ MongoDB connected'))
     .catch((err) => console.log('❌ MongoDB connection error:', err));
 
+//SMTP email setup using nodemailer
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: "cuesportsevents@gmail.com",
+        pass: process.env.EMAIL_PW,
+    }
+});
+
+const tournament_created = (name, recipients) => {
+    return {
+        from: '"Cue Sports Club" <cuesportsevents@gmail.com>', // Sender address
+        //to: "cuesportsevents@gmail.com", // Placeholder
+        bcc: recipients.join(","), // Recipient's email
+        subject: `A new tournament, ${name}, has been created`, // Subject line
+        text: `Hello!
+
+A new tournament, ${name}, has been created.
+
+You can look at the participants and other information here, (website url here)!
+
+Best regards,  
+Cue Sports Club
+`,
+        // html: "<p>A new pool tournament has been created. Go sign up!</p>", // HTML body
+    };
+};
+
+const tournament_starting_soon = {
+    from: '"Cue Sports Club" <cuesportsevents@gmail.com>', // Sender address
+    bcc: "psmvcs13@gmail.com", // Recipient's email
+    subject: "Tournament Day", // Subject line
+    text:  `Hello!
+
+A tournament you signed up for is happening today. Don't miss it!
+
+You can view the bracket by visiting our website, (website url here).
+
+Best regards,  
+Cue Sports Club
+`,
+    //html: "<p>Hello! A tournament you signed up for is happening today, <b>don't miss it!</b></p>", // HTML body
+};
+
+const next_in_bracket = {
+    from: '"Cue Sports Club" <cuesportsevents@gmail.com>', // Sender address
+    bcc: "psmvcs13@gmail.com", // Recipient's email
+    subject: "Your match is almost starting", // Subject line
+    text: `Hello!
+
+Your match is starting soon. Don't miss it!
+
+You can view the bracket by visiting our website, (website url here).
+
+Best regards,  
+Cue Sports Club
+`,
+};
+
+const sendEmail = (message, name, recipients) => {
+    transporter.sendMail(message(name, recipients), (error, info) => {
+        if (error) {
+            console.log("Error:", error);
+        } else {
+            console.log("Email sent:", info.response);
+        }
+    });
+};
 
 // Tournament Schema
 // Tournament Schema
@@ -269,8 +336,9 @@ app.post('/tournaments', async (req, res) => {
             }
         }
 
+        const users = await User.find({optInTournamentEmails: true}).select('email');
         // Send email to all players after tournament creation
-        await sendEmailToPlayers(name); // Pass the tournament name
+        await sendEmail(tournament_created, name, users); // Pass the tournament name
 
         res.status(201).json({ message: 'Tournament created successfully', tournaments: newTournaments });
 
@@ -290,15 +358,6 @@ app.get('/tournaments', async (req, res) => {
         res.status(500).json({ message: 'Error fetching tournaments', error });
     }
 });
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use 'gmail' for Gmail, or use a different service for production
-    auth: {
-        user: process.env.EMAIL, // Use your email address here
-        pass: process.env.EMAIL_PASSWORD, // Use your email password here
-    },
-});
-
 
 app.get('/past-tournaments', async (req, res) => {
     try {
@@ -1074,6 +1133,8 @@ app.post('/tournament/:id/update-match', async (req, res) => {
         res.status(500).json(errorDetails);
     }
 });
+
+//sendEmail(tournament_created, "Devin");
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5001;
