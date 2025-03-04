@@ -1,6 +1,6 @@
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
 const DisplayProfile = () => {
     const countryFlags = {
@@ -25,8 +25,9 @@ const DisplayProfile = () => {
     console.log(userID);
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const [opponentNames, setOpponentNames] = useState({});
+    const [tournamentNames, setTournamentNames] = useState({});
 
-    // Fetch the tournament data when the component mounts
     useEffect(() => {
         if (!userID) {
             setError('User ID is missing');
@@ -34,53 +35,76 @@ const DisplayProfile = () => {
         }
 
         axios.get(`http://localhost:5001/member/${userID}`)
-    .then((response) => {
-            setUser(response.data);
-        })
+            .then((response) => {
+                setUser(response.data);
+            })
             .catch((error) => {
                 setError('Error fetching user details');
                 console.error(error);
             });
     }, [userID]);
 
+    useEffect(() => {
+        if (user && user.matchHistory) {
+            user.matchHistory.forEach((match) => {
+                if (match.opponent && !opponentNames[match.opponent]) {
+                    axios.get(`http://localhost:5001/member/${match.opponent}`)
+                        .then((response) => {
+                            setOpponentNames(prev => ({ ...prev, [match.opponent]: response.data.username }));
+                        })
+                        .catch((error) => {
+                            console.error('Error fetching opponent name:', error);
+                        });
+                }
+                if (match.tournament && !tournamentNames[match.tournament]) {
+                    axios.get(`http://localhost:5001/tournament/${match.tournament}/name`)
+                        .then((response) => {
+                            setTournamentNames(prev => ({ ...prev, [match.tournament]: response.data.name }));
+                        })
+                        .catch((error) => {
+                            console.error('Error fetching tournament name:', error);
+                        });
+                }
+            });
+        }
+    }, [user]);
+
     if (error || !user) {
         return <div className="text-center text-red-500">{error}</div>;
     }
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold mb-4">Player Stats</h2>
-            <div>
-                <div key={user._id} className="border p-4 mb-4">
-                    <h3 className="font-semibold">{user.username}</h3>
-                    <p>Wins: {user.wins}</p>
-                    <p>Losses: {user.losses}</p>
-                    <div className="flex items-center mt-2">
-                        <p className="mr-2">🌍 Representing:</p>
-                        {user.country && countryFlags[user.country] ? (
-                            <>
-                                <img
-                                    src={countryFlags[user.country]}
-                                    alt={`${user.country} flag`}
-                                    className="w-6 h-4 rounded-sm"
-                                />
-                                <p className="ml-2">{user.country}</p>
-                            </>
-                        ) : (
-                            <p>Unknown</p>
-                        )}
-                    </div>
-                    <p>Bio: {user.bio}</p>
+        <div className="max-w-4xl mx-auto p-8 bg-gray-800 text-white rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4 text-center">Player Stats</h2>
+            <div className="text-center">
+                <img src={user.profilePicture} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-gray-500" />
+                <h3 className="font-semibold text-lg">{user.username}</h3>
+                <p className="text-gray-400">{user.bio}</p>
+            </div>
+
+            <h3 className="text-xl font-bold mt-6">Match History</h3>
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] mt-4 border-collapse border border-gray-600">
+                    <thead>
+                    <tr className="bg-gray-700 text-center">
+                        <th className="border border-gray-500 px-4 py-2">Opponent</th>
+                        <th className="border border-gray-500 px-4 py-2">Tournament</th>
+                        <th className="border border-gray-500 px-4 py-2">Result</th>
+                        <th className="border border-gray-500 px-4 py-2">Score</th>
+                        <th className="border border-gray-500 px-4 py-2">Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {user.matchHistory.map((match, index) => (
-                        <tr key={index} className="bg-gray-100 text-center">
+                        <tr key={index} className="bg-gray-100 text-center text-black">
                             <td className="border border-gray-500 px-4 py-2">
                                 <a href={`/profile/${match.opponent}`} className="text-blue-500 hover:underline">
-                                    {match.opponent}
+                                    {opponentNames[match.opponent] || "Loading..."}
                                 </a>
                             </td>
                             <td className="border border-gray-500 px-4 py-2">
                                 <a href={`/tournament/${match.tournament}`} className="text-blue-500 hover:underline">
-                                    {match.tournament}
+                                    {tournamentNames[match.tournament] || "Loading..."}
                                 </a>
                             </td>
                             <td className={`border border-gray-500 px-4 py-2 ${match.result === 'win' ? 'text-green-500' : 'text-red-500'}`}>
@@ -90,7 +114,8 @@ const DisplayProfile = () => {
                             <td className="border border-gray-500 px-4 py-2">{new Date(match.date).toLocaleDateString()}</td>
                         </tr>
                     ))}
-                </div>
+                    </tbody>
+                </table>
             </div>
         </div>
     );

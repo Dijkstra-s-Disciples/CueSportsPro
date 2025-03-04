@@ -132,9 +132,10 @@ app.use((req, res, next) => {
 app.get('/login/federated/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', passport.authenticate('google', {
-    successRedirect: 'http://localhost:5173/',
+    successRedirect: 'http://localhost:5173',
     failureRedirect: '/login'
 }));
+
 
 app.post('/logout', (req, res) => {
     req.logout((err) => {
@@ -443,6 +444,30 @@ app.post('/tournament/:id/complete', async (req, res) => {
     } catch (error) {
         console.error('Error completing tournament:', error);
         res.status(500).json({ message: 'Error completing tournament', error });
+    }
+});
+// Backend - Get only the name of a specific tournament
+app.get('/tournament/:id/name', async (req, res) => {
+    const tournamentId = req.params.id;
+    try {
+        if (!tournamentId) {
+            return res.status(400).json({ message: 'Tournament ID is missing' });
+        }
+        if (!mongoose.Types.ObjectId.isValid(tournamentId)) {
+            return res.status(400).json({ message: 'Invalid tournament ID' });
+        }
+
+        // Fetch only the tournament name
+        const tournament = await Tournament.findById(tournamentId).select('name');
+
+        if (!tournament) {
+            return res.status(404).json({ message: 'Tournament not found' });
+        }
+
+        res.json({ name: tournament.name });
+    } catch (error) {
+        console.error('Error fetching tournament name:', error);
+        res.status(500).json({ message: 'Error fetching tournament name', error });
     }
 });
 
