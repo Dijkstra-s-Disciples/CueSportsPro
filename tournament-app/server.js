@@ -576,7 +576,7 @@ app.get('/tournament/:id/bracket', async (req, res) => {
             res.json({
                 name: tournament.name,
                 status: tournament.status,
-                players: tournament.players
+                players: tournament.players,
             });
         } else {
             // For in-progress or completed tournaments, we need to populate player data in the bracket
@@ -640,7 +640,9 @@ app.get('/tournament/:id/bracket', async (req, res) => {
             res.json({
                 name: tournament.name,
                 status: tournament.status,
-                bracket: populatedBracket
+                bracket: populatedBracket,
+                officials: tournament.officials,
+                scoring: tournament.scoring
             });
         }
     } catch (error) {
@@ -878,7 +880,7 @@ app.post('/tournament/:id/update-match', async (req, res) => {
         roundIndex,
         matchIndex,
         winnerId,
-        score1,  // 🆕 Added logging for scores
+        score1,
         score2
     });
 
