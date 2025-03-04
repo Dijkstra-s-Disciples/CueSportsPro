@@ -172,7 +172,7 @@ const TournamentList = ({ tournaments, user }) => {
                                         )}
 
                                         {/* Admin controls */}
-                                        {user && user.role === 'tournament-official' && tournament.status === 'open' && (
+                                        {user && tournament.officials.includes(user._id) && tournament.status === 'open' && (
                                             <button
                                                 onClick={() => handleStart(tournament._id)}
                                                 className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"

@@ -11,6 +11,7 @@ const Bracket = () => {
     const [updating, setUpdating] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const navigate = useNavigate();
+    const [matchScores, setMatchScores] = useState({});
 
     // Helper function to safely compare IDs that might be in different formats
     const isSameId = (id1, id2) => {
@@ -58,7 +59,7 @@ const Bracket = () => {
         fetchBracketData();
     }, [id]);
 
-    const handleWinnerSelection = async (roundIndex, matchIndex, winnerId) => {
+    const handleWinnerSelection = async (roundIndex, matchIndex, winnerId, score1, score2) => {
         if (!winnerId || updating) return;
         
         // Check if tournament is in-progress
@@ -76,7 +77,9 @@ const Bracket = () => {
                 {
                     roundIndex,
                     matchIndex,
-                    winnerId
+                    winnerId,
+                    score1,
+                    score2
                 },
                 { withCredentials: true }
             );
@@ -259,6 +262,23 @@ const Bracket = () => {
         );
     }
 
+    const handleScoreChange = (roundIndex, matchIndex, player, score) => {
+        console.log(tournament)
+        setMatchScores(prevScores => ({
+            ...prevScores,
+            [`${roundIndex}-${matchIndex}`]: {
+                ...prevScores[`${roundIndex}-${matchIndex}`],
+                [player]: score
+            }
+        }));
+    };
+
+    // Check if both fields are at max
+    const checkSubmitButtonVisibility = (roundIndex, matchIndex) => {
+        const match = matchScores[`${roundIndex}-${matchIndex}`] || {};
+        return match.player1 === tournament.scoring || match.player2 === tournament.scoring;
+    };
+
     // If the tournament is in-progress, display the bracket
     return (
         <div className="bracket-container bg-gray-900 p-8 rounded-lg shadow-xl">
@@ -275,8 +295,8 @@ const Bracket = () => {
                     You must be signed in as a tournament official to update match results.
                 </div>
             )}
-            
-            {currentUser && currentUser.role !== 'tournament-official' && (
+
+            {currentUser && !tournament.officials.some(official => (official._id === currentUser._id)) && (
                 <div className="text-center text-yellow-400 mb-4">
                     Only tournament officials can update match results.
                 </div>
@@ -315,18 +335,47 @@ const Bracket = () => {
                                     </div>
                                     
                                     {/* Only show select if both players are assigned, no winner yet, and user is a tournament official */}
-                                    {match.player1 && match.player2 && !match.winner && 
-                                     currentUser && currentUser.role === 'tournament-official' && (
-                                        <select
-                                            value={match.winner || ''}
-                                            onChange={(e) => handleWinnerSelection(roundIndex, matchIndex, e.target.value)}
-                                            className="winner-select"
-                                            disabled={updating}
-                                        >
-                                            <option value="">Select Winner</option>
-                                            <option value={match.player1._id}>{match.player1.username}</option>
-                                            <option value={match.player2._id}>{match.player2.username}</option>
-                                        </select>
+                                    {/*{console.log(match.player1, match.player2, !match.winner, )}*/}
+                                    {match.player1 && match.player2 && !match.winner &&
+                                     currentUser && tournament.officials.some(official => (official._id === currentUser._id)) && (
+                                            <form>
+                                                <label htmlFor={`player1-${roundIndex}-${matchIndex}`}>{match.player1.username}&#39;s Score</label>
+                                                <input
+                                                    type="number"
+                                                    id={`player1-${roundIndex}-${matchIndex}`}
+                                                    value={matchScores[`${roundIndex}-${matchIndex}`]?.player1 || 0}
+                                                    onChange={(e) =>
+                                                        handleScoreChange(roundIndex, matchIndex, 'player1', parseInt(e.target.value))
+                                                    }
+                                                    min="0"
+                                                    max={tournament.scoring}
+                                                />
+                                                <br /><br />
+
+                                                <label htmlFor={`player2-${roundIndex}-${matchIndex}`}>{match.player2.username}&#39;s Score</label>
+                                                <input
+                                                    type="number"
+                                                    id={`player2-${roundIndex}-${matchIndex}`}
+                                                    value={matchScores[`${roundIndex}-${matchIndex}`]?.player2 || 0}
+                                                    onChange={(e) =>
+                                                        handleScoreChange(roundIndex, matchIndex, 'player2', parseInt(e.target.value))
+                                                    }
+                                                    min="0"
+                                                    max={tournament.scoring}
+                                                />
+                                                <br /><br />
+
+                                                {/* Submit button */}
+                                                {checkSubmitButtonVisibility(roundIndex, matchIndex) && (
+                                                    <button type="button" className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"
+                                                            onClick={() => {handleWinnerSelection(
+                                                                roundIndex,
+                                                                matchIndex,
+                                                                matchScores[`${roundIndex}-${matchIndex}`].player1 >= matchScores[`${roundIndex}-${matchIndex}`].player2 ? match.player1._id : match.player2._id,
+                                                                matchScores[`${roundIndex}-${matchIndex}`].player1,
+                                                                matchScores[`${roundIndex}-${matchIndex}`].player2)}}>Confirm Results</button>)
+                                                }
+                                            </form>
                                     )}
                                     
                                     {/* If winner is selected, show who won */}
