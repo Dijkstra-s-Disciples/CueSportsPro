@@ -114,6 +114,9 @@ const TournamentList = ({ tournaments, user }) => {
                                     <span className="mr-2">🎯</span> {tournament.format}
                                 </p>
                                 <p className="text-sm text-gray-300 flex items-center">
+                                    <span className="mr-2">🎱</span> {tournament.ruleset}
+                                </p>
+                                <p className="text-sm text-gray-300 flex items-center">
                                     <span className="mr-2">🥇</span> First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}
                                 </p>
                                 <p className="text-sm text-gray-300 flex items-center justify-between">

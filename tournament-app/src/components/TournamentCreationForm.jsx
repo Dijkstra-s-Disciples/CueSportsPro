@@ -13,7 +13,7 @@ const TournamentCreationForm = ({ official }) => {
                 date: formData.get("date"),
                 time: formData.get("time"),
                 ruleset: formData.get("rule-set"),
-                format: 'single elimination',
+                format: 'Single Elimination',
                 scoring: formData.get("scoring"),
                 levels: formData.getAll("skillLevel")})
             .then((response) => {
