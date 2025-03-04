@@ -19,6 +19,31 @@
   background: #047857;
 }
 
+/* Texture pattern for backgrounds */
+.bg-texture {
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23057857' fill-opacity='0.07' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+/* Add texture to gradient backgrounds */
+.from-emerald-900.to-emerald-800 {
+  position: relative;
+}
+
+.from-emerald-900.to-emerald-800::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* General styles */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -285,6 +310,7 @@ table tr:hover td {
     position: relative;
 }
 
+/* Blurred background base */
 .home-parallax-bg::before {
     content: '';
     position: absolute;
@@ -296,9 +322,10 @@ table tr:hover td {
     background-attachment: fixed;
     background-position: top center;
     filter: blur(8px);
-    z-index: -1;
+    z-index: -2;
 }
 
+/* Gradient overlay */
 .home-parallax-bg::after {
     content: '';
     position: absolute;
@@ -311,6 +338,20 @@ table tr:hover td {
                 rgba(6, 78, 59, 0.8) 80%, 
                 rgba(17, 24, 39, 1) 100%); /* Gradient that fades to footer color */
     z-index: -1;
+}
+
+/* Texture overlay */
+.home-parallax-bg .texture-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.8;
 }
 
 /* Special styling for cards on the home page with parallax */

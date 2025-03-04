@@ -51,7 +51,8 @@ const AppContent = () => {
     return (
         <>
             <div className={`min-h-screen ${isHomePage ? 'home-parallax-bg' : 'bg-gradient-to-b from-emerald-900 to-emerald-800'} text-white`}>
-                <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center">
+                {isHomePage && <div className="texture-overlay"></div>}
+                <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center relative z-10">
                     <h1 className="text-4xl font-bold text-white">
                         <span className="text-emerald-400">🎱 Cue</span>Sports<span className="text-emerald-400">Pro</span>
                     </h1>
@@ -121,7 +122,7 @@ const AppContent = () => {
                     </div>
                 </nav>
 
-                <div className="container mx-auto p-6 mb-auto">
+                <div className="flex-grow container mx-auto px-4 py-6 relative z-10">
                     <Routes>
                         <Route path="/signin" element={<SignIn />} />
                         {user && user.role !== 'player' && (
@@ -129,7 +130,7 @@ const AppContent = () => {
                         )}
                         <Route path="/players" element={<PlayersList />} />
                         <Route path="/past-tournaments" element={<PastTournaments />} />
-                        <Route exact path="/" element={<TournamentList user={user} tournaments={tournaments} />} />
+                        <Route path="/" element={<TournamentList tournaments={tournaments.filter(t => !t.completed && !t.inSession)} user={user} />} />
                         <Route path="/tournament/:id/bracket" element={<Bracket />} />
                         <Route path="/profile/:userID" element={<DisplayProfile />} />
                         <Route path="/EditProfile/:userID" element={<EditProfile />} />
