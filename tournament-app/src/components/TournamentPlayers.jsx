@@ -54,12 +54,18 @@ const TournamentPlayers = ({user}) => {
                         <p className="text-center">No players have registered yet.</p>
                     ) : (
                         tournamentData.players.map((player) => (
-                            <div key={player._id}>
+                            <div className="flex justify-between items-center" key={player.id}>
                                 <li className="py-2">
                                     {player.username}
-                                    {/*Need to edit later for only officials for that tournament (edit bracket in server)*/}
-                                    {user.role === 'tournament-official' ? (<button className="ml-4 w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition" onClick={()=>removePlayer(player._id)}>Reject Player</button>) : null}
                                 </li>
+                                {user.role === 'tournament-official' && (
+                                    <button
+                                        className="ml-auto sm:ml-4 w-full sm:w-auto bg-gold-500 text-black py-2 px-4 rounded-lg hover:bg-gold-400 transition"
+                                        onClick={() => removePlayer(player._id)}
+                                    >
+                                        Reject {player.username}
+                                    </button>
+                                )}
                             </div>
                         ))
                     )}
