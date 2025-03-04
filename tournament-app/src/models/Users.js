@@ -20,12 +20,12 @@ const userSchema = new mongoose.Schema({
     matchHistory: [matchHistorySchema], // Array of match history
 
     bio: { type: String, default: "This user hasn't added a bio yet." },
-    profilePicture: { type: String, default: 'https://via.placeholder.com/150' },
+    profilePicture: { type: String, default: 'https://upload.wikimedia.org/wikipedia/commons/3/34/PICA.jpg' },
     country: { type: String, default: "Unknown" },
     privacySettings: { type: String, enum: ['public', 'private'], default: 'public' },
 
-    optInTournamentEmails: { type: Boolean, default: true },
-    optInNotificationEmails: { type: Boolean, default: true },
+    optInTournamentEmails: { type: Boolean, default: false },
+    optInNotificationEmails: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

@@ -41,21 +41,6 @@ const DevPanel = () => {
         }
     };
 
-    const handleMatchHistoryChange = (e, userId, index, field) => {
-        const { value } = e.target;
-        setUsers(prevUsers => prevUsers.map(user => {
-            if (user._id === userId) {
-                const updatedMatchHistory = [...user.matchHistory];
-                updatedMatchHistory[index] = {
-                    ...updatedMatchHistory[index],
-                    [field]: value
-                };
-                return { ...user, matchHistory: updatedMatchHistory };
-            }
-            return user;
-        }));
-    };
-
     const handleSaveAll = () => {
         axios.put('http://localhost:5001/users/update-all', { users })
             .then(() => alert("All users updated successfully"))
@@ -79,7 +64,7 @@ const DevPanel = () => {
                         <h3 className="text-xl font-semibold mb-2">{user.username}</h3>
                         <div className="grid grid-cols-2 gap-4">
                             {Object.keys(user).map(key => (
-                                key !== "_id" && key !== "matchHistory" ? (
+                                key !== "_id" && (
                                     <div key={key}>
                                         <label className="block text-sm text-gray-300">{key}</label>
                                         <input
@@ -89,25 +74,27 @@ const DevPanel = () => {
                                             className="bg-gray-700 border border-gray-600 p-2 w-full text-white rounded"
                                         />
                                     </div>
-                                ) : key === "matchHistory" ? (
+                                )
+                            ))}
+                        </div>
+                    </div>
+                ))}
+
+                <h3 className="text-2xl font-semibold">Tournaments</h3>
+                {tournaments.map(tournament => (
+                    <div key={tournament._id} className="border border-gray-700 p-4 bg-gray-800 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-2">{tournament.name}</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {Object.keys(tournament).map(key => (
+                                key !== "_id" ? (
                                     <div key={key}>
-                                        <h4 className="text-lg font-semibold">Match History</h4>
-                                        {user.matchHistory.map((match, index) => (
-                                            <div key={index} className="border p-2 rounded bg-gray-700 mt-2">
-                                                <h6 className="text-sm font-semibold">Match {index + 1}</h6>
-                                                {Object.keys(match).map(field => (
-                                                    <div key={field}>
-                                                        <label className="block text-sm text-gray-300">{field}</label>
-                                                        <input
-                                                            type="text"
-                                                            value={match[field] || ''}
-                                                            onChange={(e) => handleMatchHistoryChange(e, user._id, index, field)}
-                                                            className="bg-gray-600 border border-gray-500 p-2 w-full text-white rounded"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ))}
+                                        <label className="block text-sm text-gray-300">{key}</label>
+                                        <input
+                                            type="text"
+                                            value={tournament[key] || ''}
+                                            onChange={(e) => handleInputChange(e, tournament._id, key, 'tournament')}
+                                            className="bg-gray-700 border border-gray-600 p-2 w-full text-white rounded"
+                                        />
                                     </div>
                                 ) : null
                             ))}
