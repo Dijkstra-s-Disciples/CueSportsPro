@@ -70,6 +70,7 @@ const PastTournaments = () => {
                                 <p className="text-sm text-gray-300">📅 {new Date(tournament.date).toLocaleDateString()}</p>
                                 {/*<p className="text-sm text-gray-300">🕰️ Time: {tournament.time}</p>*/}
                                 <p className="text-sm text-gray-300">🎯 Format: {tournament.format}</p>
+                                <p className="text-sm text-gray-300">🎱 Ruleset: {tournament.ruleset}</p>
                                 <p className="text-sm text-gray-300">🥇 First To: {tournament.scoring} {tournament.scoring > 1 ? "Wins" : "Win"}</p>
                                 <p className="text-sm text-gray-300">👥 Players: {tournament.players.length}</p>
                             </div>
