@@ -330,7 +330,7 @@ const Bracket = () => {
                                             className={`player ${match.player2 && match.winner && 
                                                 isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
                                         >
-                                            {match.player2 ? match.player2.username : "TBD"}
+                                            {match.player2 ? match.player2.username : roundIndex === 0 ? 'BYE' : 'TBD'}
                                         </div>
                                     </div>
                                     
@@ -368,7 +368,11 @@ const Bracket = () => {
                                                 {/* Submit button */}
                                                 {checkSubmitButtonVisibility(roundIndex, matchIndex) && (
                                                     <button type="button" className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"
-                                                            onClick={() => {handleWinnerSelection(
+                                                            onClick={() => {
+                                                                if (!matchScores[`${roundIndex}-${matchIndex}`].player1) {matchScores[`${roundIndex}-${matchIndex}`].player1 = 0}
+                                                                if (!matchScores[`${roundIndex}-${matchIndex}`].player2) {matchScores[`${roundIndex}-${matchIndex}`].player2 = 0}
+                                                                console.log(matchScores[`${roundIndex}-${matchIndex}`].player1 >= matchScores[`${roundIndex}-${matchIndex}`].player2);
+                                                                handleWinnerSelection(
                                                                 roundIndex,
                                                                 matchIndex,
                                                                 matchScores[`${roundIndex}-${matchIndex}`].player1 >= matchScores[`${roundIndex}-${matchIndex}`].player2 ? match.player1._id : match.player2._id,

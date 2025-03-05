@@ -437,10 +437,10 @@ const generateBracket = (players) => {
     // Generate rounds until one match remains
     while (roundPlayers.length > 1) {
         const round = [];
-        for (let i = 0; i < roundPlayers.length; i += 2) {
+        for (let i = 0; i < roundPlayers.length / 2; i ++) {
             round.push({
                 player1: roundPlayers[i],
-                player2: roundPlayers[i + 1],
+                player2: roundPlayers[roundPlayers.length - 1 - i],
                 winner: null
             });
         }
@@ -448,6 +448,17 @@ const generateBracket = (players) => {
         // For the next round, we create placeholders (winners will be set later)
         roundPlayers = new Array(round.length).fill(null);
     }
+    let byes = []
+    rounds[0].some(match => {
+        if (match.player2 === null) {
+            match.winner = match.player1;
+            byes.push(match.winner);
+        }
+    });
+    rounds[1].some(match => {
+        if (byes.length > 0) {match.player1 = byes.shift()}
+        if (byes.length > 0) {match.player2 = byes.shift()}
+    });
     return rounds;
 };
 
