@@ -132,10 +132,10 @@ const TournamentList = ({ tournaments, user }) => {
                             <div className="mt-6 space-y-3">
                                 {/* View Button for everyone */}
                                 <Link 
-                                    to={`/tournament/${tournament._id}/bracket`}
+                                    to={`/tournament/${tournament._id}/players`}
                                     className="block text-center bg-gray-700 text-white py-2 px-4 rounded-full hover:bg-gray-600 transition-all duration-200"
                                 >
-                                    View Bracket
+                                    View Players
                                 </Link>
                                 
                                 {/* Buttons for signed-in users */}

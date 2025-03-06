@@ -30,7 +30,7 @@ const AppContent = () => {
                 console.log("Authenticated User:", response.data);
                 setUser(response.data);
             })
-            .catch(() => setUser(null));
+            .catch(() => setUser({role: 'viewer'}));
     }, []);
 
     useEffect(() => {
@@ -102,7 +102,7 @@ const AppContent = () => {
                         <Link to="/" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
                             <span className="mr-2">🏠</span> Home
                         </Link>
-                        {user && user.role !== 'player' && (
+                        {user && user.role === 'tournament-official' && (
                             <Link to="/create-tournament" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
                                 <span className="mr-2">➕</span> Create Tournament
                             </Link>
@@ -127,7 +127,7 @@ const AppContent = () => {
                 <div className="flex-grow container mx-auto px-4 py-6 relative z-10">
                     <Routes>
                         <Route path="/signin" element={<SignIn />} />
-                        {user && user.role !== 'player' && (
+                        {user && user.role === 'tournament-official' && (
                             <Route path="/create-tournament" element={<TournamentCreationForm official={user}/>} />
                         )}
                         <Route path="/players" element={<PlayersList />} />
