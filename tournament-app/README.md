@@ -43,11 +43,15 @@ appealing experience across all devices.
 
 **Challenges [Need to finish]**
 -
+- Deployment: Deploying on Glitch was a long and painful process
+- 
 
 **Contributions [Need to finish]**
 -
 **Christopher Smith:**
 - Notification feature
+  - Emailing for when a tournament is created
+  - Emailing for when a tournament is started
 - Tournament Creation
   - Updating Schema
   - Adding additional fields
@@ -63,6 +67,7 @@ appealing experience across all devices.
   - Tournament Officials being able to register or officiate (but not both)
   - Players able to Register
   - Viewers only able to view participants
+- Managing player and tournament official access
 - Updated meta data
 - QA Testing
 
@@ -85,4 +90,8 @@ appealing experience across all devices.
   - Player statistics
     - Diagrams and tables
     - Including a filter feature
-  - Player match history
+  - Updating and Displaying player match history
+- Settings
+  - Allowing users to enable/disable emails
+- Bug Fixes
+  - Created Dev Tool for debugging and testing (now deleted)
