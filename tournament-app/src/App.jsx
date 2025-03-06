@@ -63,7 +63,7 @@ const AppContent = () => {
                             >
                                 <span className="ml-1">◄</span>
                                 <img src={user?.profilePicture} alt="Profile"
-                                     className="w-20 h-20 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
+                                     className="w-10 h-10 rounded-full border-2 border-blue-500 shadow-lg" />
                                 <span>{user.username}</span>
                             </button>
                             {dropdownOpen && (
