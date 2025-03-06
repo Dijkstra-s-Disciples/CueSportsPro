@@ -6,7 +6,7 @@ const PlayersList = () => {
     const [players, setPlayers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5001/players')
+        axios.get('http://localhost:5001/users')
             .then(response => setPlayers(response.data))
             .catch(error => console.error('Error fetching players:', error));
     }, []);
