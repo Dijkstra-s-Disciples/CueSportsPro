@@ -842,6 +842,7 @@ app.put('/member/:id', async (req, res) => {
 
     try {
         // ✅ Find user by `_id` instead of `googleId`
+        console.log(memberId);
         const updatedUser = await User.findByIdAndUpdate(
             memberId,
             updateData, // ✅ Update only the provided fields
