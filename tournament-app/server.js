@@ -105,7 +105,6 @@ const sendEmail = (message, name, recipients) => {
 };
 
 // Tournament Schema
-// Tournament Schema
 const tournamentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: Date, required: true },
@@ -521,8 +520,8 @@ app.post('/tournament/:id/complete', async (req, res) => {
         res.status(500).json({ message: 'Error completing tournament', error });
     }
 });
-// Backend - Get only the name of a specific tournament
-app.get('/tournament/:id/name', async (req, res) => {
+
+app.get('/tournament/:id/details', async (req, res) => {
     const tournamentId = req.params.id;
     try {
         if (!tournamentId) {
@@ -532,19 +531,27 @@ app.get('/tournament/:id/name', async (req, res) => {
             return res.status(400).json({ message: 'Invalid tournament ID' });
         }
 
-        // Fetch only the tournament name
-        const tournament = await Tournament.findById(tournamentId).select('name');
+        // Fetch tournament details including name, ruleset, and format
+        const tournament = await Tournament.findById(tournamentId).select('name ruleset format');
 
         if (!tournament) {
             return res.status(404).json({ message: 'Tournament not found' });
         }
 
-        res.json({ name: tournament.name });
+        // Log output for debugging
+        console.log("Tournament Data:", tournament);
+
+        res.json({
+            name: tournament.name,
+            ruleset: tournament.ruleset,
+            format: tournament.format
+        });
     } catch (error) {
-        console.error('Error fetching tournament name:', error);
-        res.status(500).json({ message: 'Error fetching tournament name', error });
+        console.error('Error fetching tournament details:', error);
+        res.status(500).json({ message: 'Error fetching tournament details', error });
     }
 });
+
 
 
 // Fetch bracket data for a specific tournament
