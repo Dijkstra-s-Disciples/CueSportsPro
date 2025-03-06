@@ -63,7 +63,7 @@ const AppContent = () => {
                                 className="bg-gray-800 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
                                 <img src={user?.profilePicture} alt="Profile"
-                                     className="w-20 h-20 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
+                                     className="w-12 h-12 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
                                 <span>{user.username}</span>
                                 <span className="ml-1">▼</span>
                             </button>
