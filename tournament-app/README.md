@@ -1,4 +1,11 @@
-A brief description of what you created, and a link to the project itself (two paragraphs of text)
+**[Link to CueSportsPro]() to be implemented**
+
+Made by the Dijkstra's Disciples - Chris Smith, Daniel Zhang, Devin Mihaichuk, Emre Sunar
+
+---
+**Description:**
+-
+
    CueSportsPro is a sophisticated tournament management system with role-based access control for players and 
 tournament officials. The platform enables tournament officials to create customizable tournaments 
 with different rule sets (8-Ball, 9-Ball, or 10-Ball), scoring configurations, and skill-level brackets. Players 
@@ -10,14 +17,72 @@ and spectators.
    Beyond tournament management, CueSportsPro delivers comprehensive player profiles with detailed match histories, 
 win/loss statistics, and performance analytics across different rule sets. The platform maintains an archive of past 
 tournaments with complete results and winner information for historical reference. Users can customize notification 
-preferences to stay informed about tournament registrations, upcoming matches, and results. The elegant user interface, 
+preferences to stay informed about tournament registrations, and upcoming matches. The elegant user interface, 
 featuring subtle animations, textured backgrounds, and carefully crafted typography, ensures an intuitive and visually 
-appealing experience across all devices, making CueSportsPro the definitive platform for organizing and participating 
-in cue sports competitions.
+appealing experience across all devices.
 
-Any additional instructions that might be needed to fully use your project (login information etc.)
-   1. We do not have a scheduling algorithm, so tournaments and matches need to be start manually
-An outline of the technologies you used and how you used them.
-What challenges you faced in completing the project.
-What each group member was responsible for designing / developing.
-A link to your project video.
+**Additional instructions for CueSportsPro:**
+-
+   1. To login, click the sign-in button in the upper right corner and then click on Sign In With Google when redirected
+2. Make sure you have a Google account when testing player and tournament official functionality or you cannot login
+3. Only tournament-officials have access to functions like creating tournaments which is not given by default. We can elevate your account to tournament official status for your testing if you ask prior.
+4. Only tournament-officials that are officiating a given tournament are able to enter results for that given tournament so make sure that you are set to officiate a tournament if you want to set scores.
+
+**Technology Stack [Need to finish]**
+-
+- Framework: React.js
+- Server: Node.js
+- Programming Language: Javascript
+- Styles Framework: Tailwind CSS
+- Database: MongoDB
+- Authentication: OAuth
+- Deployment: Glitch
+- Team Management: Jira
+- Styling Languages: HTML & CSS
+- Version Control: GitHub
+
+**Challenges [Need to finish]**
+-
+
+**Contributions [Need to finish]**
+-
+**Christopher Smith:**
+- Notification feature
+- Tournament Creation
+  - Updating Schema
+  - Adding additional fields
+
+**Devin Mihaichuk:**
+- Jira Management
+  - Scrum Master
+  - Sprint Management
+- Updated ongoing tournament management
+  - Added a bye system
+  - Added a scoring system
+- Registration for upcoming tournaments
+  - Tournament Officials being able to register or officiate (but not both)
+  - Players able to Register
+  - Viewers only able to view participants
+- Updated meta data
+- QA Testing
+
+**Emre Sunar:**
+- Tournament Bracket
+  - Created schema
+  - Created styling
+  - Bracket generation
+  - Limiting access to bracket management
+- Tournament Creation
+  - Updating the database
+  - Schema
+
+**Danial Zhang:**
+- Authentication through Google
+  - Automatically registering new people into the database as players
+  - Creating method to retrieve user information
+- Profile
+  - Customization of username, bio, country, and profile picture
+  - Player statistics
+    - Diagrams and tables
+    - Including a filter feature
+  - Player match history

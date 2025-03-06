@@ -12,7 +12,7 @@ import Bracket from './components/Bracket';
 import Settings from './components/Settings';
 import InSession from './components/InSession';
 import TournamentPlayers from './components/TournamentPlayers';
-import DevPanel from './components/DevPanel';
+// import DevPanel from './components/DevPanel';
 import NotFound from './components/NotFound';
 import './styles/modern.css';
 
