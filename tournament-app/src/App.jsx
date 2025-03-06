@@ -66,7 +66,6 @@ const App = () => {
                         <Link to="/signin" className="text-lg hover:text-gold-400 transition">🔐 Sign In</Link>
                     )}
                 </header>
-
                 {/* Navigation Bar */}
                 <nav className="flex justify-center space-x-6 bg-green-800 p-4 text-lg font-semibold">
                     <Link to="/" className="hover:text-gold-400 transition">🏆 Home</Link>
