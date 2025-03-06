@@ -53,33 +53,33 @@ const Settings = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Privacy Settings */}
-                <div>
-                    <label className="block font-semibold mb-2">Privacy Settings:</label>
-                    <div className="flex space-x-4">
-                        <label className={`p-2 border-2 rounded-md cursor-pointer ${user.privacySettings === 'public' ? 'border-gold-500' : 'border-gray-600'}`}>
-                            <input
-                                type="radio"
-                                name="privacySettings"
-                                value="public"
-                                checked={user.privacySettings === 'public'}
-                                onChange={() => setUser({ ...user, privacySettings: 'public' })}
-                                className="hidden"
-                            />
-                            Public
-                        </label>
-                        <label className={`p-2 border-2 rounded-md cursor-pointer ${user.privacySettings === 'private' ? 'border-gold-500' : 'border-gray-600'}`}>
-                            <input
-                                type="radio"
-                                name="privacySettings"
-                                value="private"
-                                checked={user.privacySettings === 'private'}
-                                onChange={() => setUser({ ...user, privacySettings: 'private' })}
-                                className="hidden"
-                            />
-                            Private
-                        </label>
-                    </div>
-                </div>
+                {/*<div>*/}
+                {/*    <label className="block font-semibold mb-2">Privacy Settings:</label>*/}
+                {/*    <div className="flex space-x-4">*/}
+                {/*        <label className={`p-2 border-2 rounded-md cursor-pointer ${user.privacySettings === 'public' ? 'border-gold-500' : 'border-gray-600'}`}>*/}
+                {/*            <input*/}
+                {/*                type="radio"*/}
+                {/*                name="privacySettings"*/}
+                {/*                value="public"*/}
+                {/*                checked={user.privacySettings === 'public'}*/}
+                {/*                onChange={() => setUser({ ...user, privacySettings: 'public' })}*/}
+                {/*                className="hidden"*/}
+                {/*            />*/}
+                {/*            Public*/}
+                {/*        </label>*/}
+                {/*        <label className={`p-2 border-2 rounded-md cursor-pointer ${user.privacySettings === 'private' ? 'border-gold-500' : 'border-gray-600'}`}>*/}
+                {/*            <input*/}
+                {/*                type="radio"*/}
+                {/*                name="privacySettings"*/}
+                {/*                value="private"*/}
+                {/*                checked={user.privacySettings === 'private'}*/}
+                {/*                onChange={() => setUser({ ...user, privacySettings: 'private' })}*/}
+                {/*                className="hidden"*/}
+                {/*            />*/}
+                {/*            Private*/}
+                {/*        </label>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
 
                 <div className="space-y-4">
                     {/* Tournament Emails */}
@@ -96,7 +96,7 @@ const Settings = () => {
                             className={`cursor-pointer text-sm font-medium py-1 px-3 rounded transition duration-200 
                   ${user.optInTournamentEmails ? 'bg-gray-300 text-gray-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                         >
-      {user.optInTournamentEmails ? 'Disabled' : 'Enable'}
+      {user.optInTournamentEmails ? 'Disable' : 'Enable'}
     </span>
                     </div>
 
@@ -114,7 +114,7 @@ const Settings = () => {
                             className={`cursor-pointer text-sm font-medium py-1 px-3 rounded transition duration-200 
                   ${user.optInNotificationEmails ? 'bg-gray-300 text-gray-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                         >
-      {user.optInNotificationEmails ? 'Disabled' : 'Enable'}
+      {user.optInNotificationEmails ? 'Disable' : 'Enable'}
     </span>
                     </div>
                 </div>
