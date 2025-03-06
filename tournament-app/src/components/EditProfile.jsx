@@ -46,10 +46,10 @@ const EditProfile = () => {
             profilePicture: user.profilePicture
         };
 
-        axios.put(`http://localhost:5001/member/${userID}`, updatedUser)
+        axios.put(`http://localhost:5001/member/${user._id}`, updatedUser)
             .then(() => {
                 setMessage('Profile updated successfully!');
-                setTimeout(() => navigate(`/profile/${userID}`), 1500);
+                setTimeout(() => navigate(`/profile/${user._id}`), 1500);
             })
             .catch((error) => {
                 setError('Failed to update profile');
