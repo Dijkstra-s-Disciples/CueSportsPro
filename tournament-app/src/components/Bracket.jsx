@@ -221,19 +221,29 @@ const Bracket = () => {
                                         className={`match ${match.winner ? 'match-complete' : 'match-pending'}`}
                                     >
                                         <div className="match-players">
-                                            <div 
-                                                className={`player ${match.player1 && match.winner && 
+                                            {!match.player2 && roundIndex === 0 ?
+                                                <div
+                                                    className={`player ${match.player1 && match.winner &&
                                                     isSameId(match.winner, match.player1._id) ? 'winner' : ''}`}
-                                            >
-                                                {match.player1 ? match.player1.username : "TBD"}
-                                            </div>
-                                            <div className="vs">vs</div>
-                                            <div 
-                                                className={`player ${match.player2 && match.winner && 
-                                                    isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
-                                            >
-                                                {match.player2 ? match.player2.username : "TBD"}
-                                            </div>
+                                                >
+                                                    {match.player1 ? match.player1.username : "TBD"}
+                                                </div> :
+                                                <>
+                                                    <div
+                                                        className={`player ${match.player1 && match.winner &&
+                                                        isSameId(match.winner, match.player1._id) ? 'winner' : ''}`}
+                                                    >
+                                                        {match.player1 ? match.player1.username : "TBD"}
+                                                    </div>
+                                                    <div className="vs">vs</div>
+                                                    <div
+                                                        className={`player ${match.player2 && match.winner &&
+                                                        isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
+                                                    >
+                                                        {match.player2 ? match.player2.username : 'TBD'}
+                                                    </div>
+                                                </>
+                                            }
                                         </div>
                                         
                                         {/* If winner is selected, show who won */}
@@ -319,19 +329,29 @@ const Bracket = () => {
                                     className={`match ${match.winner ? 'match-complete' : 'match-pending'}`}
                                 >
                                     <div className="match-players">
-                                        <div 
-                                            className={`player ${match.player1 && match.winner && 
+                                        {!match.player2 && roundIndex === 0 ?
+                                            <div
+                                                className={`player ${match.player1 && match.winner &&
                                                 isSameId(match.winner, match.player1._id) ? 'winner' : ''}`}
-                                        >
-                                            {match.player1 ? match.player1.username : "TBD"}
-                                        </div>
-                                        <div className="vs">vs</div>
-                                        <div 
-                                            className={`player ${match.player2 && match.winner && 
-                                                isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
-                                        >
-                                            {match.player2 ? match.player2.username : "TBD"}
-                                        </div>
+                                            >
+                                                {match.player1 ? match.player1.username : "TBD"}
+                                            </div> :
+                                            <>
+                                                <div
+                                                    className={`player ${match.player1 && match.winner &&
+                                                    isSameId(match.winner, match.player1._id) ? 'winner' : ''}`}
+                                                >
+                                                    {match.player1 ? match.player1.username : "TBD"}
+                                                </div>
+                                                <div className="vs">vs</div>
+                                                <div
+                                                    className={`player ${match.player2 && match.winner &&
+                                                    isSameId(match.winner, match.player2._id) ? 'winner' : ''}`}
+                                                >
+                                                    {match.player2 ? match.player2.username : 'TBD'}
+                                                </div>
+                                            </>
+                                        }
                                     </div>
                                     
                                     {/* Only show select if both players are assigned, no winner yet, and user is a tournament official */}
@@ -368,7 +388,11 @@ const Bracket = () => {
                                                 {/* Submit button */}
                                                 {checkSubmitButtonVisibility(roundIndex, matchIndex) && (
                                                     <button type="button" className="w-full bg-amber-600 text-white py-2 px-4 rounded-full hover:bg-amber-500 transition-all duration-200"
-                                                            onClick={() => {handleWinnerSelection(
+                                                            onClick={() => {
+                                                                if (!matchScores[`${roundIndex}-${matchIndex}`].player1) {matchScores[`${roundIndex}-${matchIndex}`].player1 = 0}
+                                                                if (!matchScores[`${roundIndex}-${matchIndex}`].player2) {matchScores[`${roundIndex}-${matchIndex}`].player2 = 0}
+                                                                console.log(matchScores[`${roundIndex}-${matchIndex}`].player1 >= matchScores[`${roundIndex}-${matchIndex}`].player2);
+                                                                handleWinnerSelection(
                                                                 roundIndex,
                                                                 matchIndex,
                                                                 matchScores[`${roundIndex}-${matchIndex}`].player1 >= matchScores[`${roundIndex}-${matchIndex}`].player2 ? match.player1._id : match.player2._id,
