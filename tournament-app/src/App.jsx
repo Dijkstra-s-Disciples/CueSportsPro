@@ -51,7 +51,7 @@ const AppContent = () => {
         <>
             <div className={`min-h-screen ${isHomePage ? 'home-parallax-bg' : 'bg-gradient-to-b from-emerald-900 to-emerald-800'} text-white`}>
                 {isHomePage && <div className="texture-overlay"></div>}
-                <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center relative z-10">
+                <header className="bg-gray-900 py-6 px-6 shadow-lg flex justify-between items-center relative z-[1001]">
                     <h1 className="text-4xl font-bold text-white">
                         <span className="text-emerald-400">🎱 Cue</span>Sports<span className="text-emerald-400">Pro</span>
                     </h1>
@@ -61,28 +61,35 @@ const AppContent = () => {
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                                 className="bg-gray-800 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
-                                <span className="ml-1">◄</span>
                                 <img src={user?.profilePicture} alt="Profile"
-                                     className="w-10 h-10 rounded-full border-2 border-blue-500 shadow-lg" />
+                                     className="w-10 h-10 rounded-full border-2 border-emerald-500 shadow-lg mr-2" />
                                 <span>{user.username}</span>
+                                <span className="ml-1">▼</span>
                             </button>
                             {dropdownOpen && (
-                                <div
-                                    className="absolute right-full top-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-visible pz-[999]">
-                                    <Link to={`/profile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
-                                        <span className="mr-2">📝</span> View Profile
-                                    </Link>
-                                    <Link to={`/EditProfile`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
-                                        <span className="mr-2">✏️</span> Edit Profile
-                                    </Link>
-                                    <Link to={`/settings/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
-                                        <span className="mr-2">⚙️</span> Settings
-                                    </Link>
+                                <>
+                                    {/* Invisible overlay to capture clicks outside the dropdown */}
+                                    <div 
+                                        className="fixed inset-0 z-[1998]" 
+                                        onClick={() => setDropdownOpen(false)}
+                                    ></div>
+                                    <div
+                                        className="absolute right-0 top-full mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-[1999]">
+                                        <Link to={`/profile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                            <span className="mr-2">📝</span> View Profile
+                                        </Link>
+                                        <Link to={`/EditProfile`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                            <span className="mr-2">✏️</span> Edit Profile
+                                        </Link>
+                                        <Link to={`/settings/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                            <span className="mr-2">⚙️</span> Settings
+                                        </Link>
 
-                                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-400 hover:bg-gray-700 transition flex items-center">
-                                        <span className="mr-2">🚪</span> Sign Out
-                                    </button>
-                                </div>
+                                        <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-400 hover:bg-gray-700 transition flex items-center">
+                                            <span className="mr-2">🚪</span> Sign Out
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
                     ) : (
