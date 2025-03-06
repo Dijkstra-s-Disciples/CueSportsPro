@@ -1,8 +1,8 @@
 A brief description of what you created, and a link to the project itself (two paragraphs of text)
    CueSportsPro is a sophisticated tournament management system with role-based access control for players and 
 tournament officials. The platform enables tournament officials to create customizable tournaments 
-with different rule sets (8-Ball, 9-Ball, 10-Ball), scoring configurations, and skill-level brackets. Players 
-can register for upcoming tournaments, view their match schedules, and track their performance history. When 
+with different rule sets (8-Ball, 9-Ball, or 10-Ball), scoring configurations, and skill-level brackets. Players 
+can register for upcoming tournaments, view past tournaments, view ongoing bracket, and track their performance history. When 
 tournaments are in session, the system provides real-time bracket visualization with automatic progression 
 as officials record match results, creating an engaging and transparent tournament experience for all participants
 and spectators.
