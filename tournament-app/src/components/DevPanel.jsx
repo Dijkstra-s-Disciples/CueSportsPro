@@ -57,7 +57,7 @@ const DevPanel = () => {
     return (
         <div className="p-6 bg-gray-900 text-white min-h-screen">
             <h2 className="text-3xl font-bold mb-4">🛠 Admin Panel</h2>
-            <div className="space-y-6">
+            <div className="space-y-5">
                 <h3 className="text-2xl font-semibold">Users</h3>
                 {users.map(user => (
                     <div key={user._id} className="border border-gray-700 p-4 bg-gray-800 rounded-lg">

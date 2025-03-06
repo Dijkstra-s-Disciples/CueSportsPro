@@ -27,7 +27,6 @@ const AppContent = () => {
     useEffect(() => {
         axios.get('http://localhost:5001/user', { withCredentials: true })
             .then((response) => {
-                console.log("Authenticated User:", response.data);
                 setUser(response.data);
             })
             .catch(() => setUser({role: 'viewer'}));
@@ -63,27 +62,23 @@ const AppContent = () => {
                                 className="bg-gray-800 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
                                 <img src={user?.profilePicture} alt="Profile"
-                                     className="w-12 h-12 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
+                                     className="w-6 h-6 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
                                 <span>{user.username}</span>
                                 <span className="ml-1">▼</span>
                             </button>
                             {dropdownOpen && (
                                 <div
-                                    className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50">
+                                    className="absolute top-full right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-visible z-[999]">
                                     <Link to={`/profile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
                                         <span className="mr-2">📝</span> View Profile
                                     </Link>
-                                    <Link to={`/EditProfile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
+                                    <Link to={`/EditProfile`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
                                         <span className="mr-2">✏️</span> Edit Profile
                                     </Link>
                                     <Link to={`/settings/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
                                         <span className="mr-2">⚙️</span> Settings
                                     </Link>
-                                    {user.role === 'admin' && (
-                                        <Link to="/dev-panel" className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
-                                            <span className="mr-2">🛠</span> Dev Panel
-                                        </Link>
-                                    )}
+
                                     <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-400 hover:bg-gray-700 transition flex items-center">
                                         <span className="mr-2">🚪</span> Sign Out
                                     </button>
@@ -116,11 +111,6 @@ const AppContent = () => {
                         <Link to="/now-in-session" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
                             <span className="mr-2">🏁</span> Now In Session
                         </Link>
-                        {user && user.role === 'admin' && (
-                            <Link to="/dev-panel" className="px-4 py-2 rounded-full hover:bg-emerald-700 transition-all duration-200 flex items-center">
-                                <span className="mr-2">🛠</span> Dev Tab
-                            </Link>
-                        )}
                     </div>
                 </nav>
 
@@ -135,7 +125,7 @@ const AppContent = () => {
                         <Route path="/" element={<TournamentList tournaments={tournaments.filter(t => !t.completed && !t.inSession)} user={user} />} />
                         <Route path="/tournament/:id/bracket" element={<Bracket />} />
                         <Route path="/profile/:userID" element={<DisplayProfile />} />
-                        <Route path="/EditProfile/:userID" element={<EditProfile />} />
+                        <Route path="/EditProfile" element={<EditProfile />} />
                         <Route path="/settings/:userID" element={<Settings />} />
                         <Route path="/now-in-session" element={<InSession />} />
                         <Route path="/tournament/:id/players" element={<TournamentPlayers user={user} />} />

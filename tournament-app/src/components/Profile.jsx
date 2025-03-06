@@ -219,7 +219,7 @@ const DisplayProfile = () => {
                 <select className="p-2 rounded bg-gray-700 text-white border border-gray-500"
                         onChange={(e) => setFilters({...filters, ruleset: e.target.value})}>
                     <option value="">All Rulesets</option>
-                    {formatList.map(fmt => <option key={fmt} value={fmt}>{fmt}</option>)}
+                    {rulesetList.map(fmt => <option key={fmt} value={fmt}>{fmt}</option>)}
                 </select>
                 <button onClick={resetFilters}
                         className="p-2 rounded bg-red-500 text-white border border-gray-500">Clear Filters

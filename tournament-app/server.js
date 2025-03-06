@@ -207,9 +207,6 @@ app.get('/user', (req, res) => {
 app.post('/tournament/:id/officiate', async (req, res) => {
     const tournamentId = req.params.id;
     const {userId} = req.body;
-
-    console.log(req.user);
-
     // Check if the user is authenticated and has the 'tournament-official' role
     if (!req.isAuthenticated()) {
         return res.status(401).json({message: 'You must be signed in to officiate.'});

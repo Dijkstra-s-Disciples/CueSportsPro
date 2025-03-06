@@ -26,7 +26,7 @@ const EditProfile = () => {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:5001/member/${userID}`)
+        axios.get(`http://localhost:5001/user`, { withCredentials: true })
             .then((response) => {
                 setUser(response.data);
             })
