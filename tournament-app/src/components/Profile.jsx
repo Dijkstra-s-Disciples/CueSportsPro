@@ -192,7 +192,7 @@ const DisplayProfile = () => {
 
                 </div>
                 <div className="w-full h-64 mt-8">
-                    <h3 className="text-xl font-bold text-center mb-4">Win Rate Over Time</h3>
+                    <h3 className="text-xl font-bold text-center mb-4">Daily Win Rate Over Time</h3>
                     <Line data={winRateChartData} options={winRateChartOptions}/>
                 </div>
 
