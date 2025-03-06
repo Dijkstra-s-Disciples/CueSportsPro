@@ -61,14 +61,14 @@ const AppContent = () => {
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                                 className="bg-gray-800 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
+                                <span className="ml-1">◄</span>
                                 <img src={user?.profilePicture} alt="Profile"
-                                     className="w-6 h-6 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
+                                     className="w-20 h-20 rounded-full border-4 border-blue-500 shadow-lg mb-4"/>
                                 <span>{user.username}</span>
-                                <span className="ml-1">▼</span>
                             </button>
                             {dropdownOpen && (
                                 <div
-                                    className="absolute top-full right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-visible z-[999]">
+                                    className="absolute right-full top-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-visible pz-[999]">
                                     <Link to={`/profile/${user._id}`} className="block px-4 py-3 hover:bg-gray-700 transition flex items-center">
                                         <span className="mr-2">📝</span> View Profile
                                     </Link>
