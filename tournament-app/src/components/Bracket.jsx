@@ -302,7 +302,7 @@ const Bracket = () => {
             
             {!currentUser && (
                 <div className="text-center text-yellow-400 mb-4">
-                    You must be signed in as a tournament official to update match results.
+                    You must be a tournament official to update match results.
                 </div>
             )}
 

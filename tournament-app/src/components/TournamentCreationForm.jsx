@@ -75,9 +75,6 @@ const TournamentCreationForm = ({ official }) => {
                             <option value="Singles 8-Ball">Singles 8-Ball</option>
                             <option value="Singles 9-Ball">Singles 9-Ball</option>
                             <option value="Singles 10-Ball">Singles 10-Ball</option>
-                            <option value="Doubles 8-Ball">Doubles 8-Ball</option>
-                            <option value="Doubles 9-Ball">Doubles 9-Ball</option>
-                            <option value="Doubles 10-Ball">Doubles 10-Ball</option>
                         </select>
                     </div>
                     
