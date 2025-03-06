@@ -81,28 +81,42 @@ const Settings = () => {
                     </div>
                 </div>
 
-                {/* Tournament Emails */}
-                <div>
-                    <label className="block font-semibold mb-2">Receive Tournament Emails:</label>
-                    <input
-                        type="checkbox"
-                        checked={user.optInTournamentEmails}
-                        onChange={() => setUser({ ...user, optInTournamentEmails: !user.optInTournamentEmails })}
-                        className="mr-2"
-                    />
-                    Enable
-                </div>
+                <div className="space-y-4">
+                    {/* Tournament Emails */}
+                    <div className="flex items-center space-x-3">
+                        <label className="text-lg font-semibold text-white">Receive Tournament Emails:</label>
+                        <input
+                            type="checkbox"
+                            checked={user.optInTournamentEmails}
+                            onChange={() => setUser({ ...user, optInTournamentEmails: !user.optInTournamentEmails })}
+                            className="hidden"  // Hides the actual checkbox
+                        />
+                        <span
+                            onClick={() => setUser({ ...user, optInTournamentEmails: !user.optInTournamentEmails })}
+                            className={`cursor-pointer text-sm font-medium py-1 px-3 rounded transition duration-200 
+                  ${user.optInTournamentEmails ? 'bg-gray-300 text-gray-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                        >
+      {user.optInTournamentEmails ? 'Disabled' : 'Enable'}
+    </span>
+                    </div>
 
-                {/* Notification Emails */}
-                <div>
-                    <label className="block font-semibold mb-2">Receive Notification Emails:</label>
-                    <input
-                        type="checkbox"
-                        checked={user.optInNotificationEmails}
-                        onChange={() => setUser({ ...user, optInNotificationEmails: !user.optInNotificationEmails })}
-                        className="mr-2"
-                    />
-                    Enable
+                    {/* Notification Emails */}
+                    <div className="flex items-center space-x-3">
+                        <label className="text-lg font-semibold text-white">Receive Notification Emails:</label>
+                        <input
+                            type="checkbox"
+                            checked={user.optInNotificationEmails}
+                            onChange={() => setUser({ ...user, optInNotificationEmails: !user.optInNotificationEmails })}
+                            className="hidden"  // Hides the actual checkbox
+                        />
+                        <span
+                            onClick={() => setUser({ ...user, optInNotificationEmails: !user.optInNotificationEmails })}
+                            className={`cursor-pointer text-sm font-medium py-1 px-3 rounded transition duration-200 
+                  ${user.optInNotificationEmails ? 'bg-gray-300 text-gray-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                        >
+      {user.optInNotificationEmails ? 'Disabled' : 'Enable'}
+    </span>
+                    </div>
                 </div>
 
                 {/* Save Button */}
