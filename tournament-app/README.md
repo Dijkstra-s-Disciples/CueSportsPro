@@ -23,38 +23,45 @@ appealing experience across all devices.
 
 **Additional instructions for CueSportsPro:**
 -
-   1. To login, click the sign-in button in the upper right corner and then click on Sign In With Google when redirected
+1. To login, click the sign-in button in the upper right corner and then click on Sign In With Google when redirected
 2. Make sure you have a Google account when testing player and tournament official functionality or you cannot login
 3. Only tournament-officials have access to functions like creating tournaments which is not given by default. We can elevate your account to tournament official status for your testing if you ask prior.
 4. Only tournament-officials that are officiating a given tournament are able to enter results for that given tournament so make sure that you are set to officiate a tournament if you want to set scores.
 
-**Technology Stack [Need to finish]**
+**Technology Stack**
 -
 - Framework: React.js
 - Server: Node.js
 - Programming Language: Javascript
 - Styles Framework: Tailwind CSS
 - Database: MongoDB
-- Authentication: OAuth
+- Authentication: Google OAuth
 - Deployment: Glitch
 - Team Management: Jira
 - Styling Languages: HTML & CSS
 - Version Control: GitHub
+- Notification Service: Nodemailer + smtp
 
-**Challenges [Need to finish]**
+**Challenges**
 -
 - Deployment: Deploying on Glitch was a long and painful process
-- 
+- Email Notifications: Email almost stopped working when deploying to glitch.
+- Bracket Creation: Dynamic Bracket Generation for x amount of players.
+- Authentication: Learning Oauth, and setting up google cloud console
+- Other Classes: It was hard to find time to get stuff done with other classwork and finals
 
-**Contributions [Need to finish]**
+**Contributions**
 -
 **Christopher Smith:**
-- Notification feature
+- Notification feature using Nodemailer and SMTP
   - Emailing for when a tournament is created
   - Emailing for when a tournament is started
 - Tournament Creation
   - Updating Schema
   - Adding additional fields
+- Implement Reject Player Feature
+  - Removing a player from a Tournament as a TO
+- Bug Fixes
 
 **Devin Mihaichuk:**
 - Jira Management
@@ -70,6 +77,7 @@ appealing experience across all devices.
 - Managing player and tournament official access
 - Updated meta data
 - QA Testing
+- Bug Fixes
 
 **Emre Sunar:**
 - Tournament Bracket
@@ -80,6 +88,7 @@ appealing experience across all devices.
 - Tournament Creation
   - Updating the database
   - Schema
+- Bug Fixes
 
 **Danial Zhang:**
 - Authentication through Google
@@ -93,5 +102,5 @@ appealing experience across all devices.
   - Updating and Displaying player match history
 - Settings
   - Allowing users to enable/disable emails
-- Bug Fixes
+- **Bug Fixes**
   - Created Dev Tool for debugging and testing (now deleted)
